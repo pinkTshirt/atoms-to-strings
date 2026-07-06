@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From atom to string</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#03050f;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden;height:100vh;width:100vw;cursor:none}
+#starfield{position:fixed;inset:0;z-index:0}
+#scene{position:fixed;inset:0;z-index:1;display:flex;align-items:center;justify-content:center}
+.stage-wrap{position:relative;width:340px;height:340px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#tooltip{position:fixed;z-index:10;pointer-events:none;max-width:300px;background:rgba(5,8,24,0.93);border:0.5px solid rgba(120,160,255,0.3);border-radius:12px;padding:16px 18px;opacity:0;transition:opacity .22s ease,transform .22s ease;transform:translateY(4px)}
+#tooltip.visible{opacity:1;transform:translateY(0)}
+#tooltip h3{font-size:14px;font-weight:500;color:#a8c8ff;margin-bottom:4px}
+#tooltip .badge{font-size:11px;color:#5080c0;margin-bottom:8px;display:block}
+#tooltip p{font-size:13px;line-height:1.65;color:#8899bb}
+#modal{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(2,4,16,.82);opacity:0;pointer-events:none;transition:opacity .28s ease}
+#modal.open{opacity:1;pointer-events:all}
+#modal-inner{background:#070c1f;border:0.5px solid rgba(120,160,255,.25);border-radius:18px;max-width:560px;width:90%;max-height:82vh;overflow-y:auto;padding:28px 28px 24px;position:relative}
+#modal-inner h2{font-size:18px;font-weight:500;color:#c8dcff;margin-bottom:4px}
+#modal-inner .badge{font-size:12px;color:#4a70b0;display:block;margin-bottom:16px}
+#modal-inner p{font-size:14px;line-height:1.75;color:#8899bb;margin-bottom:12px}
+#modal-inner h4{font-size:13px;font-weight:500;color:#8ab0e8;margin-top:16px;margin-bottom:6px}
+#modal-close{position:absolute;top:16px;right:18px;background:transparent;border:none;color:#5070a0;font-size:22px;cursor:pointer;line-height:1;padding:4px}
+#modal-close:hover{color:#a8c8ff}
+#nav{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:10px}
+.nav-dot{width:9px;height:9px;border-radius:50%;background:rgba(100,140,220,.2);border:0.5px solid rgba(100,140,220,.35);cursor:pointer;transition:background .3s,transform .3s}
+.nav-dot.active{background:#6090e0;transform:scale(1.45)}
+#scroll-hint{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(100,140,200,.45);font-size:12px;display:flex;align-items:center;gap:6px;transition:opacity .5s;pointer-events:none;white-space:nowrap}
+#cursor{position:fixed;z-index:30;pointer-events:none;width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(100,160,255,.65);transform:translate(-50%,-50%);transition:width .18s,height .18s}
+#cursor.hovered{width:30px;height:30px;background:rgba(80,130,255,.07)}
+#stage-title{position:fixed;bottom:56px;left:50%;transform:translateX(-50%);z-index:10;text-align:center;pointer-events:none;white-space:nowrap}
+#stage-title h2{font-size:22px;font-weight:400;letter-spacing:.03em;margin-bottom:3px}
+#stage-title .scale{font-size:12px;color:rgba(80,120,180,.65)}
+#click-hint{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(100,140,200,.4);font-size:12px;pointer-events:none;letter-spacing:.04em}
+</style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+<div id="cursor"></div>
+<div id="scene">
+  <div class="stage-wrap" id="stage-wrap">
+    <svg id="main-svg" width="340" height="340" viewBox="0 0 340 340"></svg>
+  </div>
+</div>
+<div id="tooltip"><h3 id="tt-title"></h3><span class="badge" id="tt-badge"></span><p id="tt-body"></p></div>
+<div id="stage-title"><h2 id="st-title"></h2><div class="scale" id="st-scale"></div></div>
+<div id="click-hint">click diagram to expand &nbsp;·&nbsp; scroll to zoom</div>
+<div id="nav"></div>
+<div id="scroll-hint">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0"><rect x="6" y="2" width="12" height="20" rx="6"/><line x1="12" y1="6" x2="12" y2="10" stroke-linecap="round"/></svg>
+  <span id="scroll-label">Scroll to zoom in</span>
+</div>
+<div id="modal">
+  <div id="modal-inner">
+    <button id="modal-close">&#x2715;</button>
+    <h2 id="m-title"></h2>
+    <span class="badge" id="m-badge"></span>
+    <div id="m-body"></div>
+  </div>
+</div>
+
+<script>
+function makeSvgEl(tag){return document.createElementNS('http://www.w3.org/2000/svg',tag);}
+
+var stages=[
+  {
+    id:"atom",title:"Atom",scale:"~10\u207B\u00B9\u2070 m",color:"#4aa8ff",glow:"rgba(74,168,255,0.55)",
+    short:"A cloud of electrons surrounds a nucleus 100,000\xD7 smaller \u2014 atoms bond through these shells to form all matter.",
+    draw:function(svg){
+      svg.innerHTML="";
+      var c=170;
+      var orbits=[{rx:115,ry:44,rot:-35},{rx:115,ry:44,rot:35},{rx:115,ry:44,rot:90}];
+      orbits.forEach(function(o,i){
+        var el=makeSvgEl("ellipse");el.setAttribute("cx",c);el.setAttribute("cy",c);
+        el.setAttribute("rx",o.rx);el.setAttribute("ry",o.ry);
+        el.setAttribute("transform","rotate("+o.rot+" "+c+" "+c+")");
+        el.setAttribute("fill","none");el.setAttribute("stroke","rgba(74,168,255,0.4)");el.setAttribute("stroke-width","1.2");
+        svg.appendChild(el);
+        var angle=(i*120-30)*(Math.PI/180);
+        var ex=c+Math.cos(angle)*o.rx*0.72;var ey=c+Math.sin(angle)*o.ry*0.72;
+        var e2=makeSvgEl("circle");e2.setAttribute("cx",ex);e2.setAttribute("cy",ey);
+        e2.setAttribute("r","5.5");e2.setAttribute("fill","#4aa8ff");svg.appendChild(e2);
+      });
+      var nuc=makeSvgEl("circle");nuc.setAttribute("cx",c);nuc.setAttribute("cy",c);nuc.setAttribute("r","13");nuc.setAttribute("fill","#4aa8ff");svg.appendChild(nuc);
+    },
+    long:[
+      {h:"Quantum shells",t:"Electrons don't orbit like planets. Quantum mechanics constrains them to discrete energy levels \u2014 orbitals \u2014 each described by four quantum numbers (n, l, m\u2097, m\u209B). The Pauli exclusion principle means no two electrons share the same state. The outermost valence electrons determine all of an element's chemistry."},
+      {h:"The nucleus",t:"The nucleus occupies about 1/100,000 of the atom's diameter but more than 99.9% of its mass. Rutherford's 1911 gold foil experiment first revealed this: most alpha particles passed straight through, but a few bounced back \u2014 evidence of a tiny, dense core."},
+      {h:"Atomic scale in context",t:"A hydrogen atom is roughly 0.1 nm across. If you scaled one to the size of a football stadium, the nucleus would be a marble on the centre spot \u2014 with electrons flickering as probability clouds around the outer stands. The atom is almost entirely empty space."},
+      {h:"Wave-particle duality",t:"The electron's position is not a hidden fact waiting to be measured \u2014 it genuinely does not have one until measured. The Born rule gives the probability of finding it at a given location from the square of its wavefunction. This is the core strangeness of quantum mechanics."}
+    ]
+  },
+  {
+    id:"nucleus",title:"Nucleus",scale:"~10\u207B\u00B9\u2074 m",color:"#50e0a0",glow:"rgba(80,224,160,0.55)",
+    short:"Protons and neutrons pack into a space 100,000\xD7 smaller than the atom, held by the residual strong force.",
+    draw:function(svg){
+      svg.innerHTML="";
+      var c=170;
+      var positions=[{x:155,y:148},{x:185,y:148},{x:170,y:172},{x:144,y:170},{x:192,y:170},{x:170,y:126},{x:155,y:194},{x:185,y:194}];
+      var isProton=[1,0,1,0,1,0,1,0];
+      positions.forEach(function(p,i){
+        var ci=makeSvgEl("circle");ci.setAttribute("cx",p.x);ci.setAttribute("cy",p.y);ci.setAttribute("r","19");
+        ci.setAttribute("fill",isProton[i]?"#50e0a0":"#334466");ci.setAttribute("stroke",isProton[i]?"#20a070":"#4a6a8a");ci.setAttribute("stroke-width","0.5");
+        svg.appendChild(ci);
+        var lbl=makeSvgEl("text");lbl.setAttribute("x",p.x);lbl.setAttribute("y",p.y+5);
+        lbl.setAttribute("text-anchor","middle");lbl.setAttribute("fill",isProton[i]?"#03050f":"#8ab0d0");
+        lbl.setAttribute("font-size","12");lbl.setAttribute("font-weight","500");lbl.textContent=isProton[i]?"p":"n";svg.appendChild(lbl);
+      });
+    },
+    long:[
+      {h:"Strong force and residual binding",t:"Protons carry positive charge and repel each other, yet inside a nucleus they stay together. The residual strong nuclear force \u2014 a leakage of the color force that binds quarks \u2014 overcomes electromagnetism at distances below about 2.5 fm (femtometres). It is the most powerful force in nature at that scale."},
+      {h:"Nuclear stability",t:"The ratio of neutrons to protons determines stability. Too many or too few neutrons, and the nucleus is radioactive, decaying by emitting alpha, beta, or gamma radiation. Iron-56 is the most tightly bound nucleus per nucleon \u2014 the endpoint of stellar fusion."},
+      {h:"Nuclear energy",t:"E = mc\xB2. A nucleus weighs slightly less than the sum of its free protons and neutrons \u2014 the 'mass defect'. This missing mass is the binding energy released in fission (splitting heavy nuclei) and fusion (merging light ones). Fusion of hydrogen into helium powers the sun."},
+      {h:"Shell model",t:"Nucleons, like electrons, occupy discrete energy shells. Nuclei with 'magic numbers' of protons or neutrons (2, 8, 20, 28, 50, 82, 126) are especially stable \u2014 analogous to noble gas electron configurations. This model explains why certain isotopes are exceptionally abundant and long-lived."}
+    ]
+  },
+  {
+    id:"proton",title:"Proton",scale:"~10\u207B\u00B9\u2075 m",color:"#e8a84a",glow:"rgba(232,168,74,0.55)",
+    short:"Three quarks bound by gluons. The strong force generates nearly all the proton's mass from pure field energy.",
+    draw:function(svg){
+      svg.innerHTML="";
+      var c=170;
+      var qpos=[{x:c,y:c-72},{x:c-62,y:c+44},{x:c+62,y:c+44}];
+      var qlab=["u","u","d"];
+      for(var i=0;i<3;i++){for(var j=i+1;j<3;j++){
+        var ln=makeSvgEl("line");ln.setAttribute("x1",qpos[i].x);ln.setAttribute("y1",qpos[i].y);
+        ln.setAttribute("x2",qpos[j].x);ln.setAttribute("y2",qpos[j].y);
+        ln.setAttribute("stroke","rgba(232,168,74,0.28)");ln.setAttribute("stroke-width","6");ln.setAttribute("stroke-dasharray","5 4");
+        svg.appendChild(ln);
+      }}
+      var ring=makeSvgEl("circle");ring.setAttribute("cx",c);ring.setAttribute("cy",c);ring.setAttribute("r","90");
+      ring.setAttribute("fill","none");ring.setAttribute("stroke","rgba(232,168,74,0.1)");ring.setAttribute("stroke-width","1");svg.appendChild(ring);
+      qpos.forEach(function(p,i){
+        var g=makeSvgEl("circle");g.setAttribute("cx",p.x);g.setAttribute("cy",p.y);g.setAttribute("r","25");g.setAttribute("fill","#e8a84a");svg.appendChild(g);
+        var t=makeSvgEl("text");t.setAttribute("x",p.x);t.setAttribute("y",p.y+6);t.setAttribute("text-anchor","middle");
+        t.setAttribute("fill","#03050f");t.setAttribute("font-size","16");t.setAttribute("font-weight","600");t.textContent=qlab[i];svg.appendChild(t);
+      });
+    },
+    long:[
+      {h:"Quarks and color charge",t:"Each quark carries one of three 'color charges' (red, green, blue \u2014 purely metaphorical names). The proton is always color-neutral: its three quarks combine to form a 'white' state. Quantum chromodynamics (QCD) governs this interaction, with 8 types of gluons as force carriers. The color force grows stronger as quarks are pulled apart."},
+      {h:"Quark confinement",t:"Quarks are never observed alone. As you try to separate two quarks, the energy stored in the gluon field increases linearly until it exceeds the threshold to create a new quark-antiquark pair. You always end up with new hadrons, never a free quark. This is called confinement."},
+      {h:"Mass from energy",t:"The three valence quarks (u, u, d) account for only about 1% of the proton's 938 MeV mass. The remaining 99% emerges from the kinetic energy of quarks and the energy of the gluon field \u2014 a vivid demonstration of E = mc\xB2 in everyday matter."},
+      {h:"Sea quarks and gluons",t:"The proton's interior seethes with virtual quark-antiquark pairs (sea quarks) and gluons continuously appearing and annihilating. High-energy scattering at CERN and SLAC has mapped these via parton distribution functions. The proton is less a static trio of quarks and more a turbulent quantum soup."}
+    ]
+  },
+  {
+    id:"quark",title:"Quark",scale:"<10\u207B\u00B9\u2079 m",color:"#c060e8",glow:"rgba(192,96,232,0.55)",
+    short:"Point-like to every instrument ever built. Six flavors, three colors, and the engine behind all nuclear matter.",
+    draw:function(svg){
+      svg.innerHTML="";
+      var c=170;
+      for(var i=0;i<6;i++){
+        var cr=makeSvgEl("circle");cr.setAttribute("cx",c);cr.setAttribute("cy",c);cr.setAttribute("r",(i+1)*24);
+        cr.setAttribute("fill","none");cr.setAttribute("stroke","rgba(192,96,232,"+(0.09-i*0.013)+")");cr.setAttribute("stroke-width","1");svg.appendChild(cr);
+      }
+      var core=makeSvgEl("circle");core.setAttribute("cx",c);core.setAttribute("cy",c);core.setAttribute("r","22");core.setAttribute("fill","#c060e8");svg.appendChild(core);
+      var lbl=makeSvgEl("text");lbl.setAttribute("x",c);lbl.setAttribute("y",c+6);lbl.setAttribute("text-anchor","middle");lbl.setAttribute("fill","#fff");lbl.setAttribute("font-size","13");lbl.setAttribute("font-weight","500");lbl.textContent="quark";svg.appendChild(lbl);
+      var flavors=["up","down","charm","strange","top","bottom"];
+      for(var j=0;j<6;j++){
+        var rad=j*60*(Math.PI/180);var r2=126;
+        var fx=c+Math.cos(rad)*r2;var fy=c+Math.sin(rad)*r2;
+        var dot=makeSvgEl("circle");dot.setAttribute("cx",fx);dot.setAttribute("cy",fy);dot.setAttribute("r","8");dot.setAttribute("fill","rgba(192,96,232,0.38)");svg.appendChild(dot);
+        var ft=makeSvgEl("text");ft.setAttribute("x",fx);ft.setAttribute("y",fy+4);ft.setAttribute("text-anchor","middle");ft.setAttribute("fill","rgba(200,150,255,0.75)");ft.setAttribute("font-size","10");ft.textContent=flavors[j];svg.appendChild(ft);
+      }
+    },
+    long:[
+      {h:"Six flavors",t:"Quarks come in six flavors: up (u), down (d), charm (c), strange (s), top (t), bottom (b). Ordinary matter is made of just u and d. Heavier flavors are unstable and appear only in high-energy collisions or shortly after the Big Bang. The top quark, discovered at Fermilab in 1995, is heavier than a gold atom and decays too fast to form hadrons."},
+      {h:"Fractional electric charge",t:"Quarks carry fractional charges: +2/3 (u, c, t) or \u22121/3 (d, s, b). Fractional charges were deeply controversial when Gell-Mann and Zweig proposed quarks in 1964 \u2014 no isolated fractional charge had ever been observed. They always combine to give integer charges: proton (+2/3+2/3\u22121/3 = +1), neutron (+2/3\u22121/3\u22121/3 = 0)."},
+      {h:"Point-like structure",t:"Deep inelastic scattering at SLAC in 1968 first showed that protons contain hard, point-like scatterers \u2014 the quarks. Experiments since have probed below 10\u207B\u00B9\u2079 m and found no substructure. Within the Standard Model, quarks are truly elementary."},
+      {h:"Three generations",t:"Quarks and leptons both come in three 'generations' of increasing mass. The first generation (u, d, electron, electron-neutrino) is stable. The second (c, s, muon, muon-neutrino) and third (t, b, tau, tau-neutrino) are unstable. Why exactly three generations exist is one of the deepest open questions in physics."}
+    ]
+  },
+  {
+    id:"string",title:"String (hypothetical)",scale:"~10\u207B\u00B3\u2075 m",color:"#ff5090",glow:"rgba(255,80,144,0.55)",
+    short:"At the Planck scale, superstring theory replaces point particles with vibrating 1D loops \u2014 each mode a different particle.",
+    draw:function(svg){
+      svg.innerHTML="";
+      var c=170;
+      for(var i=0;i<7;i++){
+        var bg=makeSvgEl("ellipse");bg.setAttribute("cx",c);bg.setAttribute("cy",c);
+        bg.setAttribute("rx",(i+1)*20);bg.setAttribute("ry",(i+1)*9);
+        bg.setAttribute("fill","none");bg.setAttribute("stroke","rgba(255,80,144,"+(0.07-i*0.009)+")");bg.setAttribute("stroke-width","1");svg.appendChild(bg);
+      }
+      var pts=[];var segs=60;
+      for(var j=0;j<=segs;j++){
+        var t=j/segs*Math.PI*2;
+        var rx2=72+Math.sin(t*3)*12;var ry2=34+Math.sin(t*5)*7;
+        pts.push((c+Math.cos(t)*rx2)+","+(c+Math.sin(t)*ry2));
+      }
+      var path=makeSvgEl("path");path.setAttribute("d","M"+pts.join("L")+"Z");
+      path.setAttribute("fill","none");path.setAttribute("stroke","#ff5090");path.setAttribute("stroke-width","2.2");svg.appendChild(path);
+    },
+    long:[
+      {h:"The core idea",t:"Superstring theory replaces zero-dimensional point particles with one-dimensional objects: strings roughly 10\u207B\u00B3\u2075 m long (the Planck length). Different vibrational modes correspond to different particles \u2014 the electron, the quarks, even the graviton. This would unify all four forces of nature in a single framework."},
+      {h:"Extra dimensions",t:"String theory requires 10 or 11 spacetime dimensions to be mathematically consistent. The extra 6\u20137 are 'compactified' \u2014 curled into geometries (Calabi-Yau manifolds) too small to detect at any accessible energy. The shape of this compactification determines the low-energy physics we observe."},
+      {h:"Five theories and M-theory",t:"By the mid-1990s there were five competing superstring theories. In 1995 Edward Witten showed they are all limits of a single 11-dimensional framework: M-theory. Its branes (higher-dimensional generalisations of strings) can collide to generate entire universes, inspiring the multiverse conjecture."},
+      {h:"No experimental confirmation",t:"The Planck scale (10\u207B\u00B3\u2075 m, 10\u00B9\u2079 GeV) is roughly 15 orders of magnitude beyond the reach of the LHC. String theory makes no unique, falsifiable prediction accessible to current experiments, and its scientific status is actively debated among physicists."},
+      {h:"Why physicists take it seriously",t:"Despite lacking direct evidence, string theory has produced deep mathematics used throughout physics. The AdS/CFT correspondence (a duality between a string theory and a lower-dimensional field theory) has applications in condensed matter, black hole thermodynamics, and quantum information. It remains the only known framework that consistently incorporates both quantum mechanics and general relativity."}
+    ]
+  }
+];
+
+var current=0,locked=false,accumY=0;
+
+// ---- Starfield ----
+var canvas=document.getElementById("starfield");
+var ctx=canvas.getContext("2d");
+var stars=[];
+function initStars(){
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  stars=[];
+  for(var i=0;i<320;i++)stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.4+0.2,a:Math.random(),da:(Math.random()-.5)*.003});
+}
+function drawStars(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  stars.forEach(function(s){s.a+=s.da;if(s.a<=0||s.a>=1)s.da*=-1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle="rgba(180,210,255,"+s.a.toFixed(3)+")";ctx.fill();});
+  requestAnimationFrame(drawStars);
+}
+initStars();drawStars();
+window.addEventListener("resize",initStars);
+
+// ---- Nav ----
+var navEl=document.getElementById("nav");
+stages.forEach(function(s,i){
+  var d=document.createElement("div");d.className="nav-dot"+(i===0?" active":"");
+  d.title=s.title;d.addEventListener("click",function(){goTo(i);});navEl.appendChild(d);
+});
+function updateNav(){document.querySelectorAll(".nav-dot").forEach(function(d,i){d.classList.toggle("active",i===current);});}
+
+// ---- Render ----
+var mainSvg=document.getElementById("main-svg");
+var stTitle=document.getElementById("st-title");
+var stScale=document.getElementById("st-scale");
+var scrollLabel=document.getElementById("scroll-label");
+var scrollHint=document.getElementById("scroll-hint");
+
+function render(idx){
+  var s=stages[idx];
+  mainSvg.style.filter="drop-shadow(0 0 24px "+s.glow+")";
+  s.draw(mainSvg);
+  stTitle.textContent=s.title;stTitle.style.color=s.color;stScale.textContent=s.scale;
+  if(idx===stages.length-1){scrollHint.style.opacity="0";}
+  else{scrollHint.style.opacity="1";scrollLabel.textContent=idx===0?"Scroll to zoom in":"Scroll to continue";}
+}
+render(0);
+
+function goTo(idx){
+  if(idx<0||idx>=stages.length||idx===current)return;
+  current=idx;render(idx);updateNav();
+  if(tt.classList.contains("visible")){showTooltip();}
+}
+
+// ---- Scroll ----
+document.addEventListener("wheel",function(e){
+  e.preventDefault();
+  if(locked)return;
+  if((accumY>0&&e.deltaY<0)||(accumY<0&&e.deltaY>0))accumY=0;
+  accumY+=e.deltaY;
+  if(Math.abs(accumY)<42)return;
+  var dir=accumY>0?1:-1;accumY=0;locked=true;
+  goTo(current+dir);
+  setTimeout(function(){locked=false;},580);
+},{passive:false});
+
+document.addEventListener("keydown",function(e){
+  if(e.key==="ArrowDown"||e.key==="ArrowRight")goTo(current+1);
+  if(e.key==="ArrowUp"||e.key==="ArrowLeft")goTo(current-1);
+  if(e.key==="Escape")closeModal();
+});
+
+// ---- Cursor ----
+var cursorEl=document.getElementById("cursor");
+document.addEventListener("mousemove",function(e){cursorEl.style.left=e.clientX+"px";cursorEl.style.top=e.clientY+"px";});
+
+// ---- Tooltip ----
+var tt=document.getElementById("tooltip");
+var ttTitle=document.getElementById("tt-title");
+var ttBadge=document.getElementById("tt-badge");
+var ttBody=document.getElementById("tt-body");
+
+function showTooltip(){var s=stages[current];ttTitle.textContent=s.title;ttBadge.textContent=s.scale;ttBody.textContent=s.short;}
+
+document.getElementById("stage-wrap").addEventListener("mouseenter",function(){showTooltip();tt.classList.add("visible");cursorEl.classList.add("hovered");});
+document.getElementById("stage-wrap").addEventListener("mouseleave",function(){tt.classList.remove("visible");cursorEl.classList.remove("hovered");});
+document.addEventListener("mousemove",function(e){
+  if(!tt.classList.contains("visible"))return;
+  var tx=e.clientX+28,ty=e.clientY-18;
+  if(tx+310>window.innerWidth)tx=e.clientX-320;
+  if(ty+220>window.innerHeight)ty=e.clientY-200;
+  tt.style.left=tx+"px";tt.style.top=ty+"px";
+});
+
+// ---- Modal ----
+var modal=document.getElementById("modal");
+var mTitle=document.getElementById("m-title");
+var mBadge=document.getElementById("m-badge");
+var mBody=document.getElementById("m-body");
+
+document.getElementById("stage-wrap").addEventListener("click",function(){
+  var s=stages[current];
+  mTitle.textContent=s.title;mTitle.style.color=s.color;mBadge.textContent=s.scale;
+  mBody.innerHTML="";
+  s.long.forEach(function(sec){
+    var h=document.createElement("h4");h.textContent=sec.h;mBody.appendChild(h);
+    var p=document.createElement("p");p.textContent=sec.t;mBody.appendChild(p);
+  });
+  modal.classList.add("open");cursorEl.style.visibility="hidden";
+});
+document.getElementById("modal-close").addEventListener("click",closeModal);
+modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+function closeModal(){modal.classList.remove("open");cursorEl.style.visibility="visible";}
+</script>
+</body>
+</html>
