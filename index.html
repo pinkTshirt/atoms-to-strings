@@ -37,14 +37,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;c
 #stage-ui h2{font-size:20px;font-weight:400;letter-spacing:.03em;margin-bottom:2px;transition:color .4s}
 #stage-ui .scale{font-size:11px;color:rgba(80,120,180,.6)}
 #click-hint{position:absolute;top:20px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(100,140,200,.35);font-size:11px;pointer-events:none;letter-spacing:.04em;white-space:nowrap}
-#scroll-trap{position:absolute;inset:0;z-index:5}
+
 </style>
 </head>
 <body>
 <div id="app">
   <canvas id="starfield"></canvas>
   <div id="scene"></div>
-  <div id="scroll-trap"></div>
+
   <div id="tooltip"><h3 id="tt-title"></h3><span class="badge" id="tt-badge"></span><p id="tt-body"></p></div>
   <div id="stage-ui"><h2 id="st-title"></h2><div class="scale" id="st-scale"></div></div>
   <div id="click-hint">click diagram · scroll to zoom</div>
