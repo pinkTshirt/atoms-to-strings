@@ -1,0 +1,115 @@
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#03050f}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;cursor:default}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden;background:#03050f}
+#starfield{position:absolute;inset:0;z-index:0}
+#scene{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center}
+.layer{position:absolute;display:flex;align-items:center;justify-content:center;width:100%;height:100%;will-change:transform,opacity;cursor:pointer}
+#tooltip{position:absolute;z-index:10;pointer-events:none;max-width:280px;background:rgba(5,8,24,0.95);border:0.5px solid rgba(120,160,255,0.3);border-radius:12px;padding:14px 16px;opacity:0;transition:opacity .2s ease;display:none}
+#tooltip.visible{opacity:1;display:block}
+#tooltip h3{font-size:13px;font-weight:500;color:#a8c8ff;margin-bottom:3px}
+#tooltip .badge{font-size:11px;color:#5080c0;margin-bottom:7px;display:block}
+#tooltip p{font-size:12px;line-height:1.6;color:#8899bb}
+#modal{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(2,4,16,.85);opacity:0;pointer-events:none;transition:opacity .25s ease}
+#modal.open{opacity:1;pointer-events:all}
+#modal-inner{background:#070c1f;border:0.5px solid rgba(120,160,255,.25);border-radius:16px;max-width:520px;width:90%;max-height:80vh;overflow-y:auto;padding:24px;position:relative}
+#modal-inner h2{font-size:17px;font-weight:500;color:#c8dcff;margin-bottom:3px}
+#modal-inner .mbadge{font-size:11px;color:#4a70b0;display:block;margin-bottom:14px}
+#modal-inner p{font-size:13px;line-height:1.75;color:#8899bb;margin-bottom:10px}
+#modal-inner h4{font-size:12px;font-weight:500;color:#8ab0e8;margin-top:14px;margin-bottom:5px}
+#modal-close{position:absolute;top:14px;right:16px;background:transparent;border:none;color:#5070a0;font-size:20px;cursor:pointer;padding:4px}
+#modal-close:hover{color:#a8c8ff}
+#nav{position:absolute;right:20px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:9px}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(100,140,220,.2);border:0.5px solid rgba(100,140,220,.35);cursor:pointer;transition:background .3s,transform .3s}
+.nav-dot.active{background:#6090e0;transform:scale(1.5)}
+#prog{position:absolute;left:20px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:5px}
+.prog-label{font-size:9px;color:rgba(100,140,200,.25);letter-spacing:.06em;text-transform:uppercase;transition:color .3s;cursor:pointer}
+.prog-label.active{color:rgba(100,180,255,.7)}
+#scroll-hint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(100,140,200,.4);font-size:11px;display:flex;align-items:center;gap:5px;pointer-events:none;white-space:nowrap;transition:opacity .4s}
+#stage-ui{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);z-index:10;text-align:center;pointer-events:none;white-space:nowrap}
+#stage-ui h2{font-size:20px;font-weight:400;letter-spacing:.03em;margin-bottom:2px;transition:color .4s}
+#stage-ui .scale{font-size:11px;color:rgba(80,120,180,.6)}
+#click-hint{position:absolute;top:20px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(100,140,200,.35);font-size:11px;pointer-events:none;letter-spacing:.04em;white-space:nowrap}
+
+/* --- QUARK GLUON PLASMA INTERACTION --- */
+.right-route-btn {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%) translateX(150%);
+    background: linear-gradient(135deg, #ff4500, #ff8c00);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+    opacity: 0;
+    z-index: 99;
+    pointer-events: none;
+}
+.right-route-btn.visible {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+.right-route-btn:hover {
+    background: linear-gradient(135deg, #ff5714, #ffaa00);
+    box-shadow: 0 0 30px rgba(255, 100, 0, 0.7);
+}
+.pulse-ring {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border: 2px solid #ff4500;
+    border-radius: 50px;
+    animation: macro-pulse 2s infinite;
+    pointer-events: none;
+}
+@keyframes macro-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0; }
+}
+.plasma-overlay {
+    position: absolute;
+    inset: 0;
+    background: #04040c;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+}
+.plasma-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+#close-plasma-btn {
+    position: absolute;
+    top: 30px; right: 40px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    padding: 8px 16px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    z-index: 1001;
+    transition: 0.3s;
+}
+#close-plasma-btn:hover {
+    background: #fff;
+    color: #04040c;
+}
+.simulation-info {
+    position: absolute;
+    bottom: 40px; left: 40px;
+    color: white;
+    max-width: 400px;
+    z-index: 1001;
+    font-family: sans-serif;
+    pointer-events: none;
+}
+.simulation-info h2 { font-size: 20px; color: #ff8c00; margin-bottom: 6px; }
+.simulation-info p { font-size: 13px; color: #8899bb; line-height: 1.5; }
+#plasma-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
