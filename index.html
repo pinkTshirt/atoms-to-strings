@@ -38,12 +38,99 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;c
 #stage-ui .scale{font-size:11px;color:rgba(80,120,180,.6)}
 #click-hint{position:absolute;top:20px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(100,140,200,.35);font-size:11px;pointer-events:none;letter-spacing:.04em;white-space:nowrap}
 
+/* --- QUARK GLUON PLASMA INTERACTION --- */
+.right-route-btn {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%) translateX(150%);
+    background: linear-gradient(135deg, #ff4500, #ff8c00);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+    opacity: 0;
+    z-index: 99;
+    pointer-events: none;
+}
+.right-route-btn.visible {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+.right-route-btn:hover {
+    background: linear-gradient(135deg, #ff5714, #ffaa00);
+    box-shadow: 0 0 30px rgba(255, 100, 0, 0.7);
+}
+.pulse-ring {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border: 2px solid #ff4500;
+    border-radius: 50px;
+    animation: macro-pulse 2s infinite;
+    pointer-events: none;
+}
+@keyframes macro-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0; }
+}
+.plasma-overlay {
+    position: absolute;
+    inset: 0;
+    background: #04040c;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+}
+.plasma-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+#close-plasma-btn {
+    position: absolute;
+    top: 30px; right: 40px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    padding: 8px 16px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    z-index: 1001;
+    transition: 0.3s;
+}
+#close-plasma-btn:hover {
+    background: #fff;
+    color: #04040c;
+}
+.simulation-info {
+    position: absolute;
+    bottom: 40px; left: 40px;
+    color: white;
+    max-width: 400px;
+    z-index: 1001;
+    font-family: sans-serif;
+    pointer-events: none;
+}
+.simulation-info h2 { font-size: 20px; color: #ff8c00; margin-bottom: 6px; }
+.simulation-info p { font-size: 13px; color: #8899bb; line-height: 1.5; }
+#plasma-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 </style>
 </head>
 <body>
 <div id="app">
   <canvas id="starfield"></canvas>
   <div id="scene"></div>
+
+  <div id="plasma-route-trigger" class="right-route-btn">
+    <div class="pulse-ring"></div>
+    <span>Alternative Route: QGP Plasma &rarr;</span>
+  </div>
 
   <div id="tooltip"><h3 id="tt-title"></h3><span class="badge" id="tt-badge"></span><p id="tt-body"></p></div>
   <div id="stage-ui"><h2 id="st-title"></h2><div class="scale" id="st-scale"></div></div>
@@ -61,6 +148,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;c
       <span class="mbadge" id="m-badge"></span>
       <div id="m-body"></div>
     </div>
+  </div>
+
+  <div id="plasma-animation-overlay" class="plasma-overlay">
+    <button id="close-plasma-btn">&times; Return to Timeline</button>
+    <div class="simulation-info">
+        <h2>Quark-Gluon Plasma</h2>
+        <p>Deconfined primordial soup at trillions of degrees Celsius where quarks and gluons float freely without being locked into hadrons.</p>
+    </div>
+    <canvas id="plasma-canvas"></canvas>
   </div>
 </div>
 
@@ -223,6 +319,14 @@ function updateTitle(c){
   var s=stages[c];stTitle.textContent=s.title;stTitle.style.color=s.color;stScale.textContent=s.scale;
   scrollLabel.textContent=c===0?"Scroll to zoom in":c===stages.length-1?"Scroll up to go back":"Scroll to continue";
   scrollHint.style.opacity=c===stages.length-1?"0":"1";
+  
+  // Directly control alternative route button appearance based on current step
+  var routeBtn = document.getElementById("plasma-route-trigger");
+  if(s.title === "Quark") {
+      routeBtn.classList.add("visible");
+  } else {
+      routeBtn.classList.remove("visible");
+  }
 }
 
 // ---- Animation engine ----
@@ -293,6 +397,118 @@ function openModal(i){var s=stages[i];mTitle.textContent=s.title;mTitle.style.co
 function closeModal(){modal.classList.remove("open");}
 document.getElementById("modal-close").addEventListener("click",closeModal);
 modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+
+// ---- Quark-Gluon Plasma Canvas Loop Logic ----
+const routeBtn = document.getElementById("plasma-route-trigger");
+const overlay = document.getElementById("plasma-animation-overlay");
+const closeBtn = document.getElementById("close-plasma-btn");
+const pCanvas = document.getElementById("plasma-canvas");
+const pCtx = pCanvas.getContext("2d");
+
+let plasmaFrameId;
+let isAnimatingPlasma = false;
+let plasmaParticles = [];
+
+routeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    overlay.classList.add("active");
+    locked = true; // Freeze underlying slide engine scrolling
+    resizePlasmaCanvas();
+    startPlasmaSimulation();
+});
+
+closeBtn.addEventListener("click", () => {
+    overlay.classList.remove("active");
+    locked = false; // Re-enable timeline navigation
+    stopPlasmaSimulation();
+});
+
+window.addEventListener("resize", () => {
+    if (isAnimatingPlasma) resizePlasmaCanvas();
+});
+
+function resizePlasmaCanvas() {
+    pCanvas.width = window.innerWidth;
+    pCanvas.height = window.innerHeight;
+}
+
+class PlasmaParticle {
+    constructor(x, y, type) {
+        this.x = x; this.y = y; this.type = type;
+        this.radius = type === 'gluon' ? 2 : 5;
+        this.vx = (Math.random() - 0.5) * 12;
+        this.vy = (Math.random() - 0.5) * 12;
+
+        if (type === 'quark') {
+            const colors = ['#ff3366', '#33ff66', '#3366ff'];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+        } else {
+            this.color = '#ffff33';
+        }
+    }
+    update() {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x - this.radius < 0 || this.x + this.radius > pCanvas.width) this.vx *= -1;
+        if (this.y - this.radius < 0 || this.y + this.radius > pCanvas.height) this.vy *= -1;
+    }
+    draw() {
+        pCtx.beginPath();
+        pCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        pCtx.fillStyle = this.color;
+        if (this.type === 'gluon') {
+            pCtx.shadowBlur = 6; pCtx.shadowColor = '#ffff33';
+        }
+        pCtx.fill();
+        pCtx.shadowBlur = 0;
+    }
+}
+
+function startPlasmaSimulation() {
+    isAnimatingPlasma = true;
+    plasmaParticles = [];
+    const density = Math.floor((pCanvas.width * pCanvas.height) / 12000);
+    for (let i = 0; i < density; i++) {
+        const x = Math.random() * pCanvas.width;
+        const y = Math.random() * pCanvas.height;
+        const type = Math.random() > 0.45 ? 'quark' : 'gluon';
+        plasmaParticles.push(new PlasmaParticle(x, y, type));
+    }
+    runPlasmaLoop();
+}
+
+function runPlasmaLoop() {
+    if (!isAnimatingPlasma) return;
+    pCtx.fillStyle = 'rgba(4, 4, 12, 0.3)';
+    pCtx.fillRect(0, 0, pCanvas.width, pCanvas.height);
+
+    for (let i = 0; i < plasmaParticles.length; i++) {
+        for (let j = i + 1; j < plasmaParticles.length; j++) {
+            let dx = plasmaParticles[i].x - plasmaParticles[j].x;
+            let dy = plasmaParticles[i].y - plasmaParticles[j].y;
+            let distance = Math.hypot(dx, dy);
+
+            if (distance < 85 && plasmaParticles[i].type === 'quark' && plasmaParticles[j].type === 'quark') {
+                pCtx.beginPath();
+                pCtx.moveTo(plasmaParticles[i].x, plasmaParticles[i].y);
+                pCtx.lineTo(plasmaParticles[j].x, plasmaParticles[j].y);
+                pCtx.strokeStyle = `rgba(255, 255, 51, ${1 - distance / 85})`;
+                pCtx.lineWidth = 1;
+                pCtx.stroke();
+            }
+        }
+    }
+    plasmaParticles.forEach(p => {
+        p.update();
+        p.draw();
+    });
+    plasmaFrameId = requestAnimationFrame(runPlasmaLoop);
+}
+
+function stopPlasmaSimulation() {
+    isAnimatingPlasma = false;
+    cancelAnimationFrame(plasmaFrameId);
+    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+}
 </script>
 </body>
 </html>
