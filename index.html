@@ -38,15 +38,27 @@
         </div>
     </div>
 
+    <!-- Quark-Gluon & Cosmology Simulation Overlay -->
     <div id="plasma-animation-overlay" class="plasma-overlay">
-        <button id="close-plasma-btn">&times; Return to Timeline</button>
-        <div class="simulation-info">
-            <h2>Quark-Gluon Plasma</h2>
-            <p>Deconfined primordial soup at trillions of degrees Celsius where quarks and gluons float freely without being locked into hadrons.</p>
+        <button id="close-plasma-btn">&times; Return to Scale Timeline</button>
+        
+        <!-- Cosmology Telemetry HUD -->
+        <div id="cosmo-hud">
+            <h2 id="cosmo-title">Quark-Gluon Plasma</h2>
+            <div id="cosmo-meta">
+                <span id="cosmo-time">Time: ~10⁻⁵ Seconds</span>
+                <span id="cosmo-temp">Temp: ~10¹² K</span>
+            </div>
+            <p id="cosmo-body">Deconfined primordial soup at trillions of degrees Celsius where quarks and gluons float freely without being locked into hadrons.</p>
         </div>
+
+        <!-- Scroll Indicator for the Universe Timeline -->
+        <div id="cosmo-scroll-hint">
+            <span>Scroll Down to Advance Cosmic Time &darr;</span>
+        </div>
+
         <canvas id="plasma-canvas"></canvas>
     </div>
-</div>
 
 <script type="module" src="js/main.js"></script>
 </body>
