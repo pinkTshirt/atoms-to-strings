@@ -79,6 +79,23 @@ applyStates(0); updateTitle(0); updateNav(0);
 
 // Unified Mouse Wheel Scroller Bindings
 var accumY = 0, locked = false;
+// Unified Mouse Wheel Scroller Bindings
+var accumY = 0, locked = false;
+app.addEventListener("wheel", function(e){
+  // HOTFIX: If the cosmology overlay window is open, bypass the main menu scroll engine!
+  if (document.getElementById("plasma-animation-overlay").classList.contains("active")) {
+      return; 
+  }
+
+  e.stopPropagation(); e.preventDefault();
+  if(locked) return;
+  if((accumY > 0 && e.deltaY < 0) || (accumY < 0 && e.deltaY > 0)) accumY = 0;
+  accumY += e.deltaY;
+  if(Math.abs(accumY) < 36) return;
+  var dir = accumY > 0 ? 1 : -1; accumY = 0; locked = true;
+  goTo(Math.round(target) + dir);
+  setTimeout(function(){ locked = false; }, 420);
+}, {passive: false, capture: true});
 app.addEventListener("wheel", function(e){
   e.stopPropagation(); e.preventDefault();
   if(locked) return;
