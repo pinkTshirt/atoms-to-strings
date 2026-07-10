@@ -1,4 +1,3 @@
-// Data configuration mapping out the Standard Model of Cosmology
 const cosmicEpochs = [
     {
         title: "Quark-Gluon Plasma",
@@ -31,14 +30,10 @@ const cosmicEpochs = [
 ];
 
 export class PlasmaSimulation {
-    constructor(canvasId, triggerId, overlayId, closeId, onOpenCallback, onCloseCallback) {
+    constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
-        this.routeBtn = document.getElementById(triggerId);
-        this.overlay = document.getElementById(overlayId);
-        this.closeBtn = document.getElementById(closeId);
         
-        // HUD element references
         this.hudTitle = document.getElementById("cosmo-title");
         this.hudTime = document.getElementById("cosmo-time");
         this.hudTemp = document.getElementById("cosmo-temp");
@@ -49,62 +44,38 @@ export class PlasmaSimulation {
         this.isAnimating = false;
         this.particles = [];
         
-        // Navigation timeline tracking variables
         this.currentEpoch = 0;
         this.scrollAccumulator = 0;
         this.isTransitioning = false;
-
-        this.routeBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.overlay.classList.add("active");
-            if (onOpenCallback) onOpenCallback();
-            this.currentEpoch = 0;
-            this.scrollAccumulator = 0;
-            this.updateHUD();
-            this.resize();
-            this.start();
-            this.bindScroll();
-        });
-
-        this.closeBtn.addEventListener("click", () => {
-            this.overlay.classList.remove("active");
-            if (onCloseCallback) onCloseCallback();
-            this.stop();
-            this.unbindScroll();
-        });
 
         window.addEventListener("resize", () => {
             if (this.isAnimating) this.resize();
         });
     }
 
-    bindScroll() {
-        this.wheelHandler = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (this.isTransitioning) return;
-
-            this.scrollAccumulator += e.deltaY;
-            if (Math.abs(this.scrollAccumulator) >= 40) {
-                const direction = this.scrollAccumulator > 0 ? 1 : -1;
-                this.scrollAccumulator = 0;
-                
-                const nextEpoch = this.currentEpoch + direction;
-                if (nextEpoch >= 0 && nextEpoch < cosmicEpochs.length) {
-                    this.isTransitioning = true;
-                    this.currentEpoch = nextEpoch;
-                    this.updateHUD();
-                    this.transitionParticles();
-                    setTimeout(() => { this.isTransitioning = false; }, 600);
-                }
-            }
-        };
-        this.overlay.addEventListener("wheel", this.wheelHandler, { passive: false });
+    resize() {
+        // Calculate dimensions relative to the split viewport area container
+        const parent = this.canvas.parentElement;
+        this.canvas.width = parent.offsetWidth;
+        this.canvas.height = parent.offsetHeight;
     }
 
-    unbindScroll() {
-        if (this.wheelHandler) {
-            this.overlay.removeEventListener("wheel", this.wheelHandler);
+    handleScroll(deltaY) {
+        if (this.isTransitioning) return;
+        this.scrollAccumulator += deltaY;
+        
+        if (Math.abs(this.scrollAccumulator) >= 40) {
+            const direction = this.scrollAccumulator > 0 ? 1 : -1;
+            this.scrollAccumulator = 0;
+            
+            const nextEpoch = this.currentEpoch + direction;
+            if (nextEpoch >= 0 && nextEpoch < cosmicEpochs.length) {
+                this.isTransitioning = true;
+                this.currentEpoch = nextEpoch;
+                this.updateHUD();
+                this.particles.forEach(p => p.changeState(this.currentEpoch));
+                setTimeout(() => { this.isTransitioning = false; }, 500);
+            }
         }
     }
 
@@ -123,13 +94,13 @@ export class PlasmaSimulation {
         }
     }
 
-    resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    }
-
     start() {
         this.isAnimating = true;
+        this.currentEpoch = 0;
+        this.scrollAccumulator = 0;
+        this.updateHUD();
+        this.resize();
+
         this.particles = [];
         const density = Math.floor((this.canvas.width * this.canvas.height) / 10000);
         for (let i = 0; i < density; i++) {
@@ -138,19 +109,13 @@ export class PlasmaSimulation {
         this.loop();
     }
 
-    transitionParticles() {
-        this.particles.forEach(p => p.changeState(this.currentEpoch));
-    }
-
     loop() {
         if (!this.isAnimating) return;
         
-        // Adjust background trail alpha according to cosmic age (cooling properties)
         const alpha = this.currentEpoch === 3 ? 0.6 : 0.25;
         this.ctx.fillStyle = `rgba(4, 4, 12, ${alpha})`;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Render bound interactions for Quarks and Early Nuclei bonds
         if (this.currentEpoch === 0 || this.currentEpoch === 1) {
             for (let i = 0; i < this.particles.length; i++) {
                 for (let j = i + 1; j < this.particles.length; j++) {
@@ -196,32 +161,27 @@ class CosmoParticle {
 
     changeState(epoch) {
         this.epoch = epoch;
-        const speedScale = [12, 6, 2.5, 0.6][epoch]; // Cooling down lowers kinetic speed
+        const speedScale = [12, 6, 2.5, 0.6][epoch];
         this.vx = (Math.random() - 0.5) * speedScale;
         this.vy = (Math.random() - 0.5) * speedScale;
 
-        // Assign physical configurations depending on selected cosmological era
         if (epoch === 0) {
-            // Quark Gluon Plasma
             this.state = 'quark';
             this.radius = Math.random() > 0.4 ? 4 : 2;
             const colors = ['#ff3366', '#33ff66', '#3366ff', '#ffff33'];
             this.color = colors[Math.floor(Math.random() * colors.length)];
         } 
         else if (epoch === 1) {
-            // Hadronization
             this.state = Math.random() > 0.5 ? 'proton' : 'neutron';
             this.radius = 6;
             this.color = this.state === 'proton' ? '#e8a84a' : '#556c8a';
         } 
         else if (epoch === 2) {
-            // Nucleosynthesis
             this.state = 'nucleus';
-            this.radius = Math.random() > 0.7 ? 10 : 7; // Heavy Deuterium/Helium vs Protons
+            this.radius = Math.random() > 0.7 ? 10 : 7;
             this.color = this.radius === 10 ? '#50e0a0' : '#e8a84a';
         } 
         else {
-            // Recombination (Neutral Atoms & Photons)
             this.state = Math.random() > 0.6 ? 'atom' : 'photon';
             this.radius = this.state === 'atom' ? 12 : 1.5;
             this.color = this.state === 'atom' ? 'rgba(74, 168, 255, 0.8)' : '#ffffff';
@@ -232,7 +192,6 @@ class CosmoParticle {
         this.x += this.vx;
         this.y += this.vy;
 
-        // Wrap around borders at standard CMB scale, bounce off bounds during early dense epochs
         if (this.epoch === 3) {
             if (this.x < 0) this.x = this.canvas.width;
             if (this.x > this.canvas.width) this.x = 0;
@@ -250,15 +209,12 @@ class CosmoParticle {
         ctx.fillStyle = this.color;
         
         if (this.state === 'photon') {
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 8; ctx.shadowColor = '#ffffff';
         } else if (this.state === 'quark' && this.color === '#ffff33') {
-            ctx.shadowBlur = 4;
-            ctx.shadowColor = '#ffff33';
+            ctx.shadowBlur = 4; ctx.shadowColor = '#ffff33';
         } else {
             ctx.shadowBlur = 0;
         }
-        
         ctx.fill();
         ctx.shadowBlur = 0;
     }
