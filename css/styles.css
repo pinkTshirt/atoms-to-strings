@@ -77,12 +77,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;c
     background: #04040c;
     z-index: 1000;
     opacity: 0;
-    pointer-events: none;
+    pointer-events: none; /* Keep interaction locked when hidden */
     transition: opacity 0.5s ease-in-out;
 }
 .plasma-overlay.active {
     opacity: 1;
-    pointer-events: auto;
+    pointer-events: auto; /* Enable scrolling when visible */
 }
 #close-plasma-btn {
     position: absolute;
