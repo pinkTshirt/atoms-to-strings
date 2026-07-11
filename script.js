@@ -233,20 +233,13 @@ function drawVibratingStringLoop() {
     ctx.closePath(); ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 3; ctx.shadowColor = '#ec4899'; ctx.shadowBlur = 15; ctx.stroke(); ctx.shadowBlur = 0;
 }
 
-// -----------------------------------------------------------
-// INTERACTIVE HIT DETECTION SYSTEM (RAYCASTING)
-// -----------------------------------------------------------
-
 function detectComponentHit(clientX, clientY) {
-    if (transitionProgress < 1.0) return null; // Prevent interaction during zooms
+    if (transitionProgress < 1.0) return null; 
 
     const rect = canvas.getBoundingClientRect();
-    
-    // Normalize coordinates to canvas center
     let mx = clientX - rect.left - canvas.width / 2;
     let my = clientY - rect.top - canvas.height / 2;
 
-    // Compensate for global rotation matrix applied in 'scale' mode
     if (currentMode === 'scale') {
         let unRotAngle = -globalRotation * 0.2;
         let unX = mx * Math.cos(unRotAngle) - my * Math.sin(unRotAngle);
@@ -284,7 +277,7 @@ function detectComponentHit(clientX, clientY) {
             let distToCenter = getDistance(mx, my, 0, 0);
             if (distToCenter >= 60 && distToCenter <= 120) return "Fundamental String";
         }
-    } else { // Cosmic Mode
+    } else { 
         let time = Date.now() * 0.002;
         if (targetStage === 0) {
             for (let i = 0; i < 8; i++) {
@@ -304,7 +297,6 @@ function detectComponentHit(clientX, clientY) {
     return null;
 }
 
-// Mouse Handlers for Interactivity
 canvas.addEventListener('mousemove', (e) => {
     const component = detectComponentHit(e.clientX, e.clientY);
     canvas.style.cursor = component ? 'pointer' : 'default';
@@ -317,7 +309,6 @@ canvas.addEventListener('click', (e) => {
     }
 });
 
-// Modal Controller Functions
 window.openModal = function(title, description) {
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalDesc').textContent = description;
@@ -328,7 +319,6 @@ window.closeModal = function() {
     document.getElementById('componentModal').classList.remove('active');
 };
 
-// Global scope access functions
 window.switchTimeline = function(mode) {
     if (currentMode === mode) return;
     currentMode = mode;
@@ -353,7 +343,7 @@ window.jumpToStage = function(index) {
     currentStage = targetStage;
     targetStage = index;
     transitionProgress = 0.0;
-    closeModal(); // Collapse modal if running a transition jump
+    closeModal(); 
     updateUI();
 };
 
@@ -383,7 +373,6 @@ function updateUI() {
     }, 150);
 }
 
-// Hardware input controllers
 window.addEventListener('wheel', (e) => {
     if (transitionProgress < 1.0) return;
     if (e.deltaY > 20) jumpToStage(targetStage + 1);
@@ -396,58 +385,4 @@ window.addEventListener('keydown', (e) => {
     else if (e.key === "ArrowUp" || e.key === "ArrowLeft") jumpToStage(targetStage - 1);
 });
 
-init();const canvas = document.getElementById('cosmicCanvas');
-const ctx = canvas.getContext('2d');
-
-let cameraZoom = 1.0;
-let targetZoom = 1.0;
-let panX = 0;
-let panY = 0;
-let isDragging = false;
-let lastMouse = { x: 0, y: 0 };
-
-const epochs = [
-    { title: "Inflation", time: "~10⁻³² Seconds", detail: "The universe undergoes exponential expansion, smoothing out primordial fluctuations." },
-    { title: "Primordial Particle Soup", time: "Early Universe", detail: "A hot, dense plasma of quarks and gluons before hadrons formed." },
-    { title: "Atoms Form", time: "380,000 Years", detail: "Recombination: electrons bind to nuclei, allowing light to travel freely." },
-    { title: "First Stars Form", time: "50-200 Million Years", detail: "Gravity collapses gas clouds, igniting the first nuclear fusion engines." },
-    { title: "Present Day", time: "13.8 Billion Years", detail: "Mature galaxies and complex large-scale structures dominate the universe." }
-];
-
-window.zoomToEpoch = function(index) {
-    targetZoom = 1 + (index * 2.5);
-    panX = 0; panY = 0;
-    const data = epochs[index];
-    document.getElementById('cardTitle').textContent = data.title;
-    document.getElementById('cardMetric').textContent = data.time;
-    document.getElementById('cardDescription').textContent = data.detail;
-};
-
-canvas.addEventListener('mousedown', (e) => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; });
-window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    panX += (e.clientX - lastMouse.x) / cameraZoom;
-    panY += (e.clientY - lastMouse.y) / cameraZoom;
-    lastMouse = { x: e.clientX, y: e.clientY };
-});
-window.addEventListener('mouseup', () => { isDragging = false; });
-
-function loop() {
-    cameraZoom += (targetZoom - cameraZoom) * 0.05;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.save();
-    ctx.translate(canvas.width / 2 + panX * cameraZoom, canvas.height / 2 + panY * cameraZoom);
-    ctx.scale(cameraZoom, cameraZoom);
-    
-    // Draw visual representation
-    ctx.fillStyle = "white";
-    ctx.beginPath(); ctx.arc(0, 0, 40, 0, Math.PI * 2); ctx.fill();
-    
-    ctx.restore();
-    requestAnimationFrame(loop);
-}
-
-window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-loop();
+init();
