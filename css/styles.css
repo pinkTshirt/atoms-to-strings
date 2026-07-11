@@ -1,9 +1,15 @@
+* {
+    box-sizing: border-box;
+}
+
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     overflow: hidden;
     background: #05050f;
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #ddd;
 }
 
 #app {
@@ -13,11 +19,59 @@ body, html {
 }
 
 #sidebar {
-    width: 260px;
+    width: 280px;
     background: #0a0a1f;
-    padding: 20px;
+    padding: 24px;
     flex-shrink: 0;
-    border-right: 1px solid #334;
+    border-right: 1px solid #223344;
+}
+
+.sidebar-brand {
+    font-size: 1.35em;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: #88ccff;
+    letter-spacing: 0.5px;
+}
+
+.mode-btn {
+    padding: 18px 20px;
+    margin: 12px 0;
+    background: #1a1a2e;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.mode-btn:hover {
+    background: #223344;
+    transform: translateX(4px);
+}
+
+.mode-btn.active {
+    background: #1f1f2e;
+    border: 1px solid #ff8800;
+    box-shadow: 0 0 20px rgba(255, 136, 0, 0.5);
+    color: white;
+}
+
+.mode-btn h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.1em;
+}
+
+.mode-btn p {
+    margin: 0;
+    opacity: 0.75;
+    font-size: 0.95em;
+}
+
+/* Active Cosmic Timeline orange glow */
+#btn-cosmo-mode.active {
+    border-color: #ffaa00;
+    box-shadow: 0 0 25px rgba(255, 170, 0, 0.6);
 }
 
 #viewports-container {
@@ -28,10 +82,7 @@ body, html {
 
 .viewport {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     display: none;
 }
 
@@ -45,12 +96,12 @@ canvas {
     display: block;
 }
 
-/* HUD */
+/* Cosmology HUD */
 #cosmo-hud {
     position: absolute;
     bottom: 40px;
     left: 40px;
-    background: rgba(10,10,35,0.95);
+    background: rgba(10, 10, 35, 0.95);
     padding: 25px;
     border-radius: 12px;
     max-width: 460px;
