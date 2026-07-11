@@ -3,7 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Engines - Scale Timeline</title><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cosmic Engines - Scale Timeline</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Left Dashboard Control Panel Frame -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand">COSMIC ENGINES</div>
+            <div class="nav-group">
+                <div class="nav-card active" id="navScale" onclick="switchTimeline('scale')">
+                    <h3>Scale Timeline</h3>
+                    <p>From Atom to String</p>
+                </div>
+                <div class="nav-card" id="navCosmic" onclick="switchTimeline('cosmic')">
+                    <h3>Cosmic Timeline</h3>
+                    <p>Standard Cosmology Model</p>
+                </div>
+            </div>
+
+            <!-- Context Dependent Sub-Steps -->
+            <div class="scale-steps">
+                <div class="step-link" onclick="jumpToStage(0)">Atom</div>
+                <div class="step-link" onclick="jumpToStage(1)">Nucleus</div>
+                <div class="step-link" onclick="jumpToStage(2)">Proton</div>
+                <div class="step-link" onclick="jumpToStage(3)">Quark</div>
+                <div class="step-link" onclick="jumpToStage(4)">String (Hypothetical)</div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            Scroll/Arrow keys to advance
+        </div>
+    </aside>
+
+    <!-- Visual Interactive Window Rendering Ecosystem -->
+    <main class="viewport">
+        <div class="top-hint">click diagram · scroll to zoom</div>
+        <canvas id="cosmicCanvas"></canvas>
+
+        <!-- Right Side Floating Meta Inspector Grid Card -->
+        <div class="info-card" id="infoCard">
+            <h2 id="cardTitle">Proton</h2>
+            <div class="scale-metric" id="cardMetric">~10⁻¹⁵ m</div>
+            <p id="cardDescription">Three quarks bound by gluons in constant exchange. The strong force generates 99% of the proton's mass from pure field energy.</p>
+        </div>
+
+        <!-- Matrix Pagination Tracker Navigation -->
+        <div class="dot-pagination">
+            <div class="dot" onclick="jumpToStage(0)"></div>
+            <div class="dot" onclick="jumpToStage(1)"></div>
+            <div class="dot" onclick="jumpToStage(2)"></div>
+            <div class="dot" onclick="jumpToStage(3)"></div>
+            <div class="dot" onclick="jumpToStage(4)"></div>
+        </div>
+
+        <!-- Center Bottom Focus Indicators -->
+        <div class="bottom-title-wrapper">
+            <div class="bottom-title" id="focusTitle">Proton</div>
+            <div class="bottom-subtitle" id="focusSubtitle">☉ Scroll down to continue</div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
