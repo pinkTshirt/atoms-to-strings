@@ -8,7 +8,7 @@
 </head>
 <body>
 <div id="app">
-    <!-- Architecture Switching Sidebar -->
+    <!-- Sidebar -->
     <div id="sidebar">
         <div class="sidebar-brand">Cosmic Engines</div>
         <div class="mode-btn active" id="btn-scale-mode" data-mode="scale">
@@ -22,10 +22,9 @@
         <div class="sidebar-footer">Scroll/Arrow keys to advance</div>
     </div>
 
-    <!-- MAIN VIEWPORTS CONTAINER -->
+    <!-- Viewports -->
     <div id="viewports-container">
-        
-        <!-- MODE A: SCALE SIMULATION VIEWPORT -->
+        <!-- Scale Mode -->
         <div id="viewport-scale" class="viewport active">
             <canvas id="starfield"></canvas>
             <div id="scene"></div>
@@ -42,11 +41,11 @@
             </div>
         </div>
 
-        <!-- MODE B: COSMOLOGY SIMULATION VIEWPORT -->
+        <!-- Cosmology Mode (updated default title) -->
         <div id="viewport-cosmo" class="viewport">
             <canvas id="plasma-canvas"></canvas>
             <div id="cosmo-hud">
-                <h2 id="cosmo-title">Quark-Gluon Plasma</h2>
+                <h2 id="cosmo-title">Inflation & Quark-Gluon Plasma</h2>
                 <div id="cosmo-meta">
                     <span id="cosmo-time">Time: ~10⁻⁵ Seconds</span>
                     <span id="cosmo-temp">Temp: ~10¹² K</span>
@@ -54,23 +53,20 @@
                 <p id="cosmo-body"></p>
             </div>
             <div id="cosmo-scroll-hint">
-                <span>Scroll Down to Advance Cosmic Time &darr;</span>
+                <span>Scroll Down to Advance Cosmic Time ↓</span>
             </div>
         </div>
-        
     </div>
     
-    <!-- Shared Modal Overlay for Scale Details -->
+    <!-- Modal and Tooltip (unchanged) -->
     <div id="modal">
         <div id="modal-inner">
-            <button id="modal-close">&#x2715;</button>
+            <button id="modal-close">✕</button>
             <h2 id="m-title"></h2>
             <span class="mbadge" id="m-badge"></span>
             <div id="m-body"></div>
         </div>
     </div>
-
-    <!-- Shared Popover Hover Tooltip -->
     <div id="tooltip"><h3 id="tt-title"></h3><span class="badge" id="tt-badge"></span><p id="tt-body"></p></div>
 </div>
 
