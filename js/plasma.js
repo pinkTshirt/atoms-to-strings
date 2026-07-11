@@ -46,7 +46,7 @@ export class PlasmaSimulation {
         this.currentEpoch = 0;
         this.scrollAccumulator = 0;
         this.isTransitioning = false;
-        this.gridAlpha = 0.1; // for timeline cylinder grid
+        this.gridAlpha = 0.1;
     }
 
     resize() {
@@ -81,7 +81,7 @@ export class PlasmaSimulation {
         this.hudBody.textContent = data.body;
         this.scrollHint.querySelector("span").textContent = this.currentEpoch === cosmicEpochs.length - 1 
             ? "End of Cosmic Timeline – Present Day" 
-            : "Scroll to Advance Cosmic Time ↓";
+            : "Scroll Down to Advance Cosmic Time ↓";
     }
 
     start() {
@@ -91,7 +91,7 @@ export class PlasmaSimulation {
         this.resize();
 
         this.particles = [];
-        const density = Math.floor((this.canvas.width * this.canvas.height) / 8000); // denser for structure
+        const density = Math.floor((this.canvas.width * this.canvas.height) / 8000);
         for (let i = 0; i < density; i++) {
             this.particles.push(new CosmoParticle(this.canvas, this.currentEpoch));
         }
@@ -101,7 +101,7 @@ export class PlasmaSimulation {
     loop() {
         if (!this.isAnimating) return;
 
-        // Background gradient mimicking cone/expansion (bright left → dark right)
+        // Background gradient (bright left → dark right like the image)
         const grad = this.ctx.createLinearGradient(0, 0, this.canvas.width, 0);
         const alpha = this.currentEpoch === 3 ? 0.85 : 0.4;
         grad.addColorStop(0, `rgba(20, 10, 40, ${alpha})`);
@@ -109,7 +109,7 @@ export class PlasmaSimulation {
         this.ctx.fillStyle = grad;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Subtle grid for "cylinder" timeline feel
+        // Grid for cylinder/timeline feel
         this.ctx.strokeStyle = `rgba(100, 180, 255, ${this.gridAlpha})`;
         this.ctx.lineWidth = 0.8;
         for (let x = 0; x < this.canvas.width; x += 60) {
@@ -119,7 +119,7 @@ export class PlasmaSimulation {
             this.ctx.beginPath(); this.ctx.moveTo(0, y); this.ctx.lineTo(this.canvas.width, y); this.ctx.stroke();
         }
 
-        // Connections for filaments / cosmic web (stronger in later epochs)
+        // Connections (filaments / cosmic web)
         const connectDist = [80, 70, 110, 140][this.currentEpoch];
         for (let i = 0; i < this.particles.length; i++) {
             for (let j = i + 1; j < this.particles.length; j++) {
@@ -169,7 +169,7 @@ class CosmoParticle {
         this.vx = (Math.random() - 0.5) * baseSpeed;
         this.vy = (Math.random() - 0.5) * baseSpeed;
 
-        if (epoch === 0) { // Hot plasma / inflation
+        if (epoch === 0) { // Hot early universe
             this.state = 'quark';
             this.radius = Math.random() * 3.5 + 2;
             this.color = ['#ffcc00', '#ff6600', '#ffff88'][Math.floor(Math.random()*3)];
@@ -177,7 +177,7 @@ class CosmoParticle {
             this.state = Math.random() > 0.6 ? 'photon' : 'baryon';
             this.radius = this.state === 'photon' ? 1.8 : 5;
             this.color = this.state === 'photon' ? '#ffffff' : '#88ccff';
-        } else if (epoch === 2) { // Stars / filaments
+        } else if (epoch === 2) { // First stars
             this.state = 'star';
             this.radius = Math.random() > 0.7 ? 8 : 4;
             this.color = '#ffeeaa';
@@ -195,17 +195,14 @@ class CosmoParticle {
         this.x += this.vx;
         this.y += this.vy;
 
-        // Mild attraction toward clusters in later epochs
         if (epoch >= 2) {
-            this.vx *= 0.98; this.vy *= 0.98; // damping
-            // Simple pull toward center-of-mass-ish
+            this.vx *= 0.98; this.vy *= 0.98;
             const cx = this.canvas.width / 2;
             const cy = this.canvas.height / 2;
             this.vx += (cx - this.x) * 0.00008;
             this.vy += (cy - this.y) * 0.00008;
         }
 
-        // Bounce or wrap
         if (this.x < 0 || this.x > this.canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > this.canvas.height) this.vy *= -1;
     }
@@ -221,7 +218,7 @@ class CosmoParticle {
         });
         ctx.stroke();
 
-        ctx.shadowBlur = this.state === 'photon' || this.state === 'star' || this.state === 'galaxy' ? 12 : 4;
+        ctx.shadowBlur = (this.state === 'photon' || this.state === 'star' || this.state === 'galaxy') ? 12 : 4;
         ctx.shadowColor = this.color;
         ctx.fillStyle = this.color;
         ctx.beginPath();
