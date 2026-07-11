@@ -31,7 +31,6 @@ body, html {
     font-weight: 700;
     margin-bottom: 28px;
     color: #88ccff;
-    letter-spacing: 0.5px;
 }
 
 .mode-btn {
@@ -42,7 +41,6 @@ body, html {
     cursor: pointer;
     transition: all 0.25s ease;
     border: 1px solid transparent;
-    position: relative;
 }
 
 .mode-btn:hover {
@@ -54,24 +52,6 @@ body, html {
     background: #1f1f2e;
     border: 1px solid #ff8800;
     box-shadow: 0 0 20px rgba(255, 136, 0, 0.5);
-    color: white;
-}
-
-.mode-btn h3 {
-    margin: 0 0 6px 0;
-    font-size: 1.1em;
-}
-
-.mode-btn p {
-    margin: 0;
-    opacity: 0.75;
-    font-size: 0.95em;
-}
-
-/* Active Cosmic Timeline orange glow */
-#btn-cosmo-mode.active {
-    border-color: #ffaa00;
-    box-shadow: 0 0 25px rgba(255, 170, 0, 0.6);
 }
 
 #viewports-container {
@@ -93,7 +73,55 @@ body, html {
 canvas {
     width: 100% !important;
     height: 100% !important;
-    display: block;
+}
+
+/* Scale Mode - Important for diagrams */
+#scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+.layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.layer svg {
+    width: 420px;
+    height: 420px;
+    filter: drop-shadow(0 0 40px currentColor);
+}
+
+/* HUD Elements */
+#stage-ui {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    z-index: 10;
+}
+
+#click-hint {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    z-index: 10;
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+#scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    z-index: 10;
 }
 
 /* Cosmology HUD */
@@ -101,7 +129,7 @@ canvas {
     position: absolute;
     bottom: 40px;
     left: 40px;
-    background: rgba(10, 10, 35, 0.95);
+    background: rgba(10,10,35,0.95);
     padding: 25px;
     border-radius: 12px;
     max-width: 460px;
