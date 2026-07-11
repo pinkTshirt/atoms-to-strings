@@ -1,0 +1,221 @@
+:root {
+    --bg-dark: #05070c;
+    --sidebar-width: 280px;
+    --text-primary: #f8fafc;
+    --text-secondary: #64748b;
+    --accent-orange: #f59e0b;
+    --accent-blue: #38bdf8;
+    --accent-green: #10b981;
+    --accent-pink: #ec4899;
+    --border-muted: rgba(255, 255, 255, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+/* --- LEFT SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: rgba(5, 7, 12, 0.85);
+    border-right: 1px solid var(--border-muted);
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+}
+
+.brand {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #94a3b8;
+    margin-bottom: 40px;
+}
+
+.nav-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.nav-card {
+    border-left: 2px solid transparent;
+    padding: 12px 0 12px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-card.active {
+    border-left-color: var(--accent-blue);
+}
+
+.nav-card h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.nav-card p {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.scale-steps {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 16px;
+}
+
+.step-link {
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+    text-transform: uppercase;
+}
+
+.step-link.active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.sidebar-footer {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* --- VISUALIZATION VIEWPORT --- */
+.viewport {
+    flex-grow: 1;
+    position: relative;
+    background: radial-gradient(circle at center, #0d1527 0%, var(--bg-dark) 100%);
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.top-hint {
+    position: absolute;
+    top: 24px;
+    right: 40px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+}
+
+/* --- FLOATING DETAILED CARD --- */
+.info-card {
+    position: absolute;
+    bottom: 120px;
+    right: 80px;
+    width: 320px;
+    background: rgba(10, 15, 30, 0.75);
+    border: 1px solid var(--border-muted);
+    border-radius: 8px;
+    padding: 20px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+.info-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.info-card h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.info-card .scale-metric {
+    font-size: 0.8rem;
+    font-family: monospace;
+    color: var(--accent-blue);
+    margin-bottom: 12px;
+}
+
+.info-card p {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+/* --- BOTTOM DISPLAY HEADER --- */
+.bottom-title-wrapper {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
+}
+
+.bottom-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.bottom-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+}
+
+/* Right Dot Pagination Navigation */
+.dot-pagination {
+    position: absolute;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 10;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background-color: var(--text-primary);
+    transform: scale(1.4);
+    box-shadow: 0 0 8px #fff;
+}
