@@ -3,77 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmic Engines - Scale Timeline</title>
+    <title>Cosmic Engines - Standard Model</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-    <!-- Left Dashboard Control Panel Frame -->
     <aside class="sidebar">
-        <div>
-            <div class="brand">COSMIC ENGINES</div>
-            <div class="nav-group">
-                <div class="nav-card active" id="navScale" onclick="switchTimeline('scale')">
-                    <h3>Scale Timeline</h3>
-                    <p>From Atom to String</p>
-                </div>
-                <div class="nav-card" id="navCosmic" onclick="switchTimeline('cosmic')">
-                    <h3>Cosmic Timeline</h3>
-                    <p>Standard Cosmology Model</p>
-                </div>
-            </div>
-
-            <!-- Context Dependent Sub-Steps -->
-            <div class="scale-steps" id="stepContainer">
-                <div class="step-link active" onclick="jumpToStage(0)">Atom</div>
-                <div class="step-link" onclick="jumpToStage(1)">Nucleus</div>
-                <div class="step-link" onclick="jumpToStage(2)">Proton</div>
-                <div class="step-link" onclick="jumpToStage(3)">Quark</div>
-                <div class="step-link" onclick="jumpToStage(4)">String (Hypothetical)</div>
-            </div>
+        <div class="brand">COSMIC ENGINES</div>
+        <div class="epoch-nav" id="epochNav">
+            <div class="epoch-item" onclick="zoomToEpoch(0)">Inflation (~10⁻³²s)</div>
+            <div class="epoch-item" onclick="zoomToEpoch(1)">Primordial Soup</div>
+            <div class="epoch-item" onclick="zoomToEpoch(2)">Atoms Form (380k yr)</div>
+            <div class="epoch-item" onclick="zoomToEpoch(3)">First Stars (50-200M yr)</div>
+            <div class="epoch-item" onclick="zoomToEpoch(4)">Present Day (13.8B yr)</div>
         </div>
-
-        <div class="sidebar-footer">
-            Scroll/Arrow keys to advance
+        <div class="info-card">
+            <h2 id="cardTitle">Select an Epoch</h2>
+            <div class="scale-metric" id="cardMetric"></div>
+            <p id="cardDescription"></p>
         </div>
     </aside>
 
-    <!-- Visual Interactive Window Rendering Ecosystem -->
     <main class="viewport">
-        <div class="top-hint">click moving components · scroll to zoom</div>
         <canvas id="cosmicCanvas"></canvas>
-
-        <!-- Right Side Floating Meta Inspector Grid Card -->
-        <div class="info-card visible" id="infoCard">
-            <h2 id="cardTitle">Atom</h2>
-            <div class="scale-metric" id="cardMetric">~10⁻¹⁰ m</div>
-            <p id="cardDescription">A cloud of electrons surrounds a nucleus 100,000× smaller — quantum mechanics describes their positions as probability clouds.</p>
-        </div>
-
-        <!-- Matrix Pagination Tracker Navigation -->
-        <div class="dot-pagination" id="dotContainer">
-            <div class="dot active" onclick="jumpToStage(0)"></div>
-            <div class="dot" onclick="jumpToStage(1)"></div>
-            <div class="dot" onclick="jumpToStage(2)"></div>
-            <div class="dot" onclick="jumpToStage(3)"></div>
-            <div class="dot" onclick="jumpToStage(4)"></div>
-        </div>
-
-        <!-- Center Bottom Focus Indicators -->
-        <div class="bottom-title-wrapper">
-            <div class="bottom-title" id="focusTitle">Atom</div>
-            <div class="bottom-subtitle" id="focusSubtitle">☉ Scroll down to continue</div>
-        </div>
     </main>
-
-    <!-- Component Detail Modal Overlay -->
-    <div id="componentModal" class="component-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">×</span>
-            <h3 id="modalTitle">Component Name</h3>
-            <p id="modalDesc">Detailed description of the subatomic or cosmic component goes here.</p>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 </body>
