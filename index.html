@@ -3,383 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atoms to Strings - Interactive Simulator</title>
-    <style>
-        :root {
-            --bg-main: #0a0e17;
-            --bg-surface: #121824;
-            --border: #222d42;
-            --text-main: #f1f5f9;
-            --text-muted: #64748b;
-            --accent-cyan: #06b6d4;
-            --accent-purple: #a855f7;
-            --accent-amber: #f59e0b;
-            --radius: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        header {
-            background-color: var(--bg-surface);
-            border-bottom: 1px solid var(--border);
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.2rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            background: linear-gradient(to right, var(--accent-cyan), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .workspace {
-            display: grid;
-            grid-template-columns: 1fr 420px;
-            flex-grow: 1;
-            height: calc(100vh - 60px);
-        }
-
-        /* Canvas Simulator Area */
-        .simulator-pane {
-            position: relative;
-            background-image: radial-gradient(var(--border) 1px, transparent 1px);
-            background-size: 24px 24px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .controls-toolbar {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            background: rgba(18, 24, 36, 0.85);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 8px;
-            display: flex;
-            gap: 8px;
-            z-index: 10;
-        }
-
-        .tool-btn {
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .tool-btn:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
-        .tool-btn.active {
-            background: var(--accent-cyan);
-            color: #000;
-            font-weight: 600;
-        }
-
-        .tool-btn.btn-clear {
-            border-color: rgba(239, 68, 68, 0.3);
-            color: #f87171;
-        }
-        .tool-btn.btn-clear:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            cursor: crosshair;
-        }
-
-        /* String/Data Representation Panel */
-        .string-pane {
-            background-color: var(--bg-surface);
-            border-left: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .pane-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .pane-header h2 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .output-wrapper {
-            flex-grow: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            overflow-y: auto;
-        }
-
-        .code-box {
-            background-color: var(--bg-main);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 16px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.85rem;
-            color: #34d399;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .copy-btn {
-            background: var(--border);
-            border: none;
-            color: var(--text-main);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .copy-btn:hover {
-            background: #2e3d59;
-        }
-
-        .instruction-toast {
-            position: absolute;
-            bottom: 16px;
-            left: 16px;
-            background: rgba(10, 14, 23, 0.9);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            pointer-events: none;
-        }
-    </style>
+    <title>Cosmic Engines - Scale Timeline</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header>
-        <div class="logo">⚛️ ATOMS TO STRINGS // SIMULATOR</div>
-        <div><a href="https://github.com/pinkTshirt/atoms-to-strings" target="_blank" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">GitHub</a></div>
-    </header>
-
-    <div class="workspace">
-        <!-- Interactive Canvas Simulator Box -->
-        <div class="simulator-pane">
-            <div class="controls-toolbar">
-                <button class="tool-btn active" id="tool-carbon">＋ Add Carbon (C)</button>
-                <button class="tool-btn" id="tool-hydrogen" style="--accent-cyan: var(--accent-purple); color: #fff;">＋ Add Hydrogen (H)</button>
-                <button class="tool-btn" id="tool-bond">🔗 Link Bond</button>
-                <button class="tool-btn btn-clear" id="tool-clear">🗑️ Clear Canvas</button>
+    <!-- Left Dashboard Control Panel Frame -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand">COSMIC ENGINES</div>
+            <div class="nav-group">
+                <div class="nav-card active">
+                    <h3>Scale Timeline</h3>
+                    <p>From Atom to String</p>
+                </div>
+                <div class="nav-card">
+                    <h3>Cosmic Timeline</h3>
+                    <p>Standard Cosmology Model</p>
+                </div>
             </div>
-            
-            <canvas id="simCanvas"></canvas>
-            
-            <div class="instruction-toast" id="infoToast">Click anywhere on the grid to place an Atom.</div>
-        </div>
 
-        <!-- Real-Time String Serialization Debugger Box -->
-        <div class="string-pane">
-            <div class="pane-header">
-                <h2>Explicit Code String Output</h2>
-                <button class="copy-btn" id="copyString">Copy Data String</button>
-            </div>
-            <div class="output-wrapper">
-                <div class="code-box" id="jsonStringOutput">// Place atoms on the workspace grid to see localized data structures compile instantly.</div>
+            <!-- Context Dependent Sub-Steps -->
+            <div class="scale-steps">
+                <div class="step-link" onclick="jumpToStage(0)">Atom</div>
+                <div class="step-link" onclick="jumpToStage(1)">Nucleus</div>
+                <div class="step-link" onclick="jumpToStage(2)">Proton</div>
+                <div class="step-link" onclick="jumpToStage(3)">Quark</div>
+                <div class="step-link" onclick="jumpToStage(4)">String (Hypothetical)</div>
             </div>
         </div>
-    </div>
 
-    <script>
-        const canvas = document.getElementById('simCanvas');
-        const ctx = canvas.getContext('2d');
-        const stringOutput = document.getElementById('jsonStringOutput');
-        const infoToast = document.getElementById('infoToast');
+        <div class="sidebar-footer">
+            Scroll/Arrow keys to advance
+        </div>
+    </aside>
 
-        // State variables
-        let atoms = [];
-        let bonds = [];
-        let currentTool = 'C'; // 'C', 'H', 'BOND'
-        let selectedAtomForBond = null;
+    <!-- Visual Interactive Window Rendering Ecosystem -->
+    <main class="viewport">
+        <div class="top-hint">click diagram · scroll to zoom</div>
+        <canvas id="cosmicCanvas"></canvas>
 
-        // Sync canvas size natively
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
-            draw();
-        }
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 100);
+        <!-- Right Side Floating Meta Inspector Grid Card -->
+        <div class="info-card" id="infoCard">
+            <h2 id="cardTitle">Proton</h2>
+            <div class="scale-metric" id="cardMetric">~10⁻¹⁵ m</div>
+            <p id="cardDescription">Three quarks bound by gluons in constant exchange. The strong force generates 99% of the proton's mass from pure field energy.</p>
+        </div>
 
-        // UI Tool Selection
-        document.getElementById('tool-carbon').onclick = () => setTool('C', 'tool-carbon', 'Click anywhere on the grid to place Carbon.');
-        document.getElementById('tool-hydrogen').onclick = () => setTool('H', 'tool-hydrogen', 'Click anywhere on the grid to place Hydrogen.');
-        document.getElementById('tool-bond').onclick = () => setTool('BOND', 'tool-bond', 'Click an atom, then click another to form a molecular bond.');
-        document.getElementById('tool-clear').onclick = () => {
-            atoms = []; bonds = []; selectedAtomForBond = null;
-            draw(); serializeToString();
-        };
+        <!-- Matrix Pagination Tracker Navigation -->
+        <div class="dot-pagination">
+            <div class="dot" onclick="jumpToStage(0)"></div>
+            <div class="dot" onclick="jumpToStage(1)"></div>
+            <div class="dot" onclick="jumpToStage(2)"></div>
+            <div class="dot" onclick="jumpToStage(3)"></div>
+            <div class="dot" onclick="jumpToStage(4)"></div>
+        </div>
 
-        function setTool(tool, btnId, instruction) {
-            currentTool = tool;
-            selectedAtomForBond = null;
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            if(btnId) document.getElementById(btnId).classList.add('active');
-            infoToast.textContent = instruction;
-            draw();
-        }
+        <!-- Center Bottom Focus Indicators -->
+        <div class="bottom-title-wrapper">
+            <div class="bottom-title" id="focusTitle">Proton</div>
+            <div class="bottom-subtitle" id="focusSubtitle">☉ Scroll down to continue</div>
+        </div>
+    </main>
 
-        // Click interaction handler
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            if (currentTool === 'C' || currentTool === 'H') {
-                // Add unique localized atom structures
-                atoms.push({
-                    id: atoms.length,
-                    element: currentTool,
-                    x: x,
-                    y: y,
-                    color: currentTool === 'C' ? '#06b6d4' : '#a855f7',
-                    radius: currentTool === 'C' ? 18 : 12
-                });
-                serializeToString();
-            } else if (currentTool === 'BOND') {
-                const clickedAtom = atoms.find(a => Math.hypot(a.x - x, a.y - y) < a.radius + 10);
-                if (clickedAtom) {
-                    if (!selectedAtomForBond) {
-                        selectedAtomForBond = clickedAtom;
-                    } else if (selectedAtomForBond.id !== clickedAtom.id) {
-                        // Avoid duplicates
-                        const linkExists = bonds.some(b => 
-                            (b.from === selectedAtomForBond.id && b.to === clickedAtom.id) ||
-                            (b.from === clickedAtom.id && b.to === selectedAtomForBond.id)
-                        );
-                        if (!linkExists) {
-                            bonds.push({ from: selectedAtomForBond.id, to: clickedAtom.id });
-                            serializeToString();
-                        }
-                        selectedAtomForBond = null;
-                    }
-                } else {
-                    selectedAtomForBond = null;
-                }
-            }
-            draw();
-        });
-
-        // Generate explicit structural string models
-        function serializeToString() {
-            if(atoms.length === 0) {
-                stringOutput.textContent = `// System Idle: Workspace Empty.\n// Generate structural chains on the canvas UI framework matrix grid.`;
-                return;
-            }
-
-            const modelObject = {
-                molecular_graph: {
-                    total_atoms: atoms.length,
-                    total_bonds: bonds.length,
-                    nodes: atoms.map(a => ({ id: a.id, element: a.element, coordinates: { x: Math.round(a.x), y: Math.round(a.y) } })),
-                    edges: bonds.map((b, index) => ({ bond_id: index, from_node: b.from, to_node: b.to, type: "covalent_single" }))
-                },
-                compiled_string_stream: "ATOMS_" + atoms.map(a => `${a.element}${a.id}`).join('-') + "__BONDS_" + bonds.map(b => `${b.from}L${b.to}`).join('_')
-            };
-
-            stringOutput.textContent = JSON.stringify(modelObject, null, 4);
-        }
-
-        // Graphic Render pipeline loops
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw link strings/edges
-            bonds.forEach(b => {
-                const fromAtom = atoms.find(a => a.id === b.from);
-                const toAtom = atoms.find(a => a.id === b.to);
-                if (fromAtom && toAtom) {
-                    ctx.beginPath();
-                    ctx.moveTo(fromAtom.x, fromAtom.y);
-                    ctx.lineTo(toAtom.x, toAtom.y);
-                    ctx.strokeStyle = '#334155';
-                    ctx.lineWidth = 4;
-                    ctx.stroke();
-                }
-            });
-
-            // Draw individual nodes/atoms
-            atoms.forEach(a => {
-                ctx.beginPath();
-                ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
-                ctx.fillStyle = a.color;
-                ctx.fill();
-                
-                // Highlight active link targets
-                if (selectedAtomForBond && selectedAtomForBond.id === a.id) {
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.stroke();
-                }
-
-                // Add symbol markers
-                ctx.fillStyle = '#000000';
-                ctx.font = `bold ${a.radius * 0.9}px sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(a.element, a.x, a.y);
-            });
-        }
-
-        // Copy functionality built-in
-        document.getElementById('copyString').onclick = () => {
-            navigator.clipboard.writeText(stringOutput.textContent);
-            const initialText = document.getElementById('copyString').textContent;
-            document.getElementById('copyString').textContent = "Copied String Data!";
-            setTimeout(() => {
-                document.getElementById('copyString').textContent = initialText;
-            }, 1500);
-        };
-        
-        // Render empty state initially
-        draw();
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
