@@ -109,17 +109,14 @@ btnCosmo.addEventListener("click", () => switchMode('cosmo'));
 /* --- ROUTED SYSTEM MOUSE WHEEL DRIVER --- */
 var accumY = 0, scrollLock = false;
 window.addEventListener("wheel", function(e){
-  // Check targeting to avoid capturing inputs inside explicit details overlays
   if(document.getElementById("modal").classList.contains("open")) return;
   
   e.preventDefault();
   e.stopPropagation();
 
   if (currentActiveMode === 'cosmo') {
-      // Pipe input vector telemetry immediately downstream to Cosmology runner
       cosmoSim.handleScroll(e.deltaY);
   } else {
-      // Direct scroll events inside Scale Zoom engine arrays
       if(scrollLock) return;
       if((accumY > 0 && e.deltaY < 0) || (accumY < 0 && e.deltaY > 0)) accumY = 0;
       accumY += e.deltaY;
@@ -166,7 +163,7 @@ window.addEventListener("resize", () => {
     BASE = Math.min(W, H) * 0.65;
 });
 
-// === AUTO START COSMOLOGY MODE FOR TESTING ===
+// Start in Scale Timeline by default (Scale diagrams should appear)
 setTimeout(() => {
-    switchMode('cosmo');
-}, 500);
+    switchMode('scale');
+}, 100);
