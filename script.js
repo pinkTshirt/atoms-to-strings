@@ -1,10 +1,10 @@
 const canvas = document.getElementById('cosmicCanvas');
 const ctx = canvas.getContext('2d');
 
-// State Engine properties
-let currentMode = 'scale'; // 'scale' or 'cosmic'
-let currentStage = 2; 
-let targetStage = 2;
+// Fixed State Engine properties initializing at Stage 0
+let currentMode = 'scale'; 
+let currentStage = 0; 
+let targetStage = 0;
 let transitionProgress = 1.0; 
 let globalRotation = 0;
 let stars = [];
@@ -28,7 +28,7 @@ function getActiveStages() {
     return currentMode === 'scale' ? scaleStages : cosmicStages;
 }
 
-// Setup environment structures
+// Setup environment structures securely
 function init() {
     resize();
     stars = Array.from({length: 150}, () => ({
@@ -40,7 +40,6 @@ function init() {
         speedY: (Math.random() - 0.5) * 0.5,
         color: ['#38bdf8', '#f59e0b', '#ec4899', '#ffffff'][Math.floor(Math.random() * 4)]
     }));
-    updateUI();
     window.requestAnimationFrame(loop);
 }
 
@@ -55,7 +54,7 @@ function loop() {
     globalRotation += 0.003;
     
     if (transitionProgress < 1.0) {
-        transitionProgress += 0.04;
+        transitionProgress += 0.05;
         if (transitionProgress >= 1.0) {
             transitionProgress = 1.0;
             currentStage = targetStage;
@@ -63,8 +62,6 @@ function loop() {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw universe soup background dynamic particles
     drawBackgroundPlasma();
 
     ctx.save();
@@ -227,17 +224,16 @@ window.switchTimeline = function(mode) {
     document.getElementById('navScale').classList.toggle('active', mode === 'scale');
     document.getElementById('navCosmic').classList.toggle('active', mode === 'cosmic');
     
-    const container = document.querySelector('.scale-steps');
     const currentList = getActiveStages();
-    container.innerHTML = currentList.map((st, i) => `<div class="step-link" onclick="jumpToStage(${i})">${st.title}</div>`).join('');
-    
-    const dotPagination = document.querySelector('.dot-pagination');
-    dotPagination.innerHTML = currentList.map((st, i) => `<div class="dot" onclick="jumpToStage(${i})"></div>`).join('');
+    document.getElementById('stepContainer').innerHTML = currentList.map((st, i) => `<div class="step-link" onclick="jumpToStage(${i})">${st.title}</div>`).join('');
+    document.getElementById('dotContainer').innerHTML = currentList.map((st, i) => `<div class="dot" onclick="jumpToStage(${i})"></div>`).join('');
 
     currentStage = 0;
     targetStage = 0;
     transitionProgress = 1.0;
-    updateUI();
+    
+    // Slight delay to ensure DOM is ready before modifying UI
+    setTimeout(updateUI, 50); 
 };
 
 window.jumpToStage = function(index) {
@@ -251,6 +247,8 @@ window.jumpToStage = function(index) {
 
 function updateUI() {
     const activeList = getActiveStages();
+    if (!activeList || !activeList[targetStage]) return;
+    
     const data = activeList[targetStage];
     
     document.querySelectorAll('.step-link').forEach((el, idx) => {
@@ -270,7 +268,7 @@ function updateUI() {
         document.getElementById('cardDescription').textContent = data.desc;
         document.getElementById('focusTitle').textContent = data.title;
         card.classList.add('visible');
-    }, 250);
+    }, 150);
 }
 
 // Hardware input controllers
