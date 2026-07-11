@@ -9,6 +9,23 @@ let transitionProgress = 1.0;
 let globalRotation = 0;
 let stars = [];
 
+// Component Dictionary for Interactive Raycasting Pop-ups
+const componentData = {
+    "Electron": "Fundamental subatomic particles with a negative elementary electric charge. In an atom, they are bound to the nucleus by electromagnetism and exist in quantum probability clouds.",
+    "Atomic Nucleus": "The extremely dense region consisting of protons and neutrons at the center of an atom. It contains over 99.9% of the atom's mass but occupies a tiny fraction of its volume.",
+    "Proton": "A stable subatomic particle with a positive electric charge, found in atomic nuclei. It is a hadron, comprised of two 'up' quarks and one 'down' quark.",
+    "Neutron": "A subatomic particle of about the same mass as a proton but without an electric charge. It is comprised of one 'up' quark and two 'down' quarks.",
+    "Up Quark": "The lightest of all quarks, a major constituent of visible matter, carrying a fractional electric charge of +2/3 e. They are never found in isolation.",
+    "Down Quark": "The second lightest quark, carrying a fractional electric charge of -1/3 e. Along with up quarks, they form the protons and neutrons of atomic nuclei.",
+    "Gluon Field": "Gluons are the exchange particles (gauge bosons) for the strong force between quarks. This force field generates the vast majority of the mass of a proton or neutron.",
+    "Quark Core": "Quarks are treated as point-like elementary particles in the Standard Model, meaning they have no measurable physical volume or internal structure.",
+    "Fundamental String": "In string theory, point particles are replaced by one-dimensional vibrating strings. The specific vibrational mode of the string dictates the particle's mass and charge.",
+    "Free Quark / Gluon": "At extreme energies (trillions of degrees), the strong force cannot confine quarks. They dissolve into a nearly perfect, frictionless liquid soup called Quark-Gluon Plasma.",
+    "Newly Bound Hadron": "As the universe expanded and cooled below the Hagedorn temperature, quarks suddenly became permanently bound together by gluons, creating the first protons and neutrons.",
+    "Stable Nucleus": "During the Recombination epoch, the universe finally cooled enough to allow positively charged nuclei to capture free-roaming electrons.",
+    "Bound Electron": "Once captured by nuclei, electrons settled into distinct energy states. This cleared the universe of free-scattering plasma, allowing light to travel freely for the first time."
+};
+
 // Definition Matrices
 const scaleStages = [
     { title: "Atom", metric: "~10⁻¹⁰ m", desc: "A cloud of electrons surrounds a nucleus 100,000× smaller — quantum mechanics describes their positions as probability clouds.", color: "#38bdf8" },
@@ -216,6 +233,101 @@ function drawVibratingStringLoop() {
     ctx.closePath(); ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 3; ctx.shadowColor = '#ec4899'; ctx.shadowBlur = 15; ctx.stroke(); ctx.shadowBlur = 0;
 }
 
+// -----------------------------------------------------------
+// INTERACTIVE HIT DETECTION SYSTEM (RAYCASTING)
+// -----------------------------------------------------------
+
+function detectComponentHit(clientX, clientY) {
+    if (transitionProgress < 1.0) return null; // Prevent interaction during zooms
+
+    const rect = canvas.getBoundingClientRect();
+    
+    // Normalize coordinates to canvas center
+    let mx = clientX - rect.left - canvas.width / 2;
+    let my = clientY - rect.top - canvas.height / 2;
+
+    // Compensate for global rotation matrix applied in 'scale' mode
+    if (currentMode === 'scale') {
+        let unRotAngle = -globalRotation * 0.2;
+        let unX = mx * Math.cos(unRotAngle) - my * Math.sin(unRotAngle);
+        let unY = mx * Math.sin(unRotAngle) + my * Math.cos(unRotAngle);
+        mx = unX;
+        my = unY;
+    }
+
+    const getDistance = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+
+    if (currentMode === 'scale') {
+        if (targetStage === 0) {
+            if (getDistance(mx, my, 0, 0) <= 25) return "Atomic Nucleus";
+            let e1Angle = globalRotation * 1.5;
+            if (getDistance(mx, my, Math.cos(e1Angle) * 160, Math.sin(e1Angle) * 160) <= 20) return "Electron";
+            let e2Angle = -globalRotation * 2;
+            if (getDistance(mx, my, Math.cos(e2Angle) * 100, Math.sin(e2Angle) * 100) <= 20) return "Electron";
+        }
+        else if (targetStage === 1) {
+            const cluster = [{x:-20,y:-10,t:'p'}, {x:15,y:-20,t:'n'}, {x:-5,y:20,t:'p'}, {x:25,y:15,t:'n'}, {x:-25,y:25,t:'n'}, {x:0,y:0,t:'p'}];
+            for (let p of cluster) {
+                if (getDistance(mx, my, p.x, p.y) <= 25) return p.t === 'p' ? "Proton" : "Neutron";
+            }
+        }
+        else if (targetStage === 2) {
+            if (getDistance(mx, my, -70, 40) <= 38) return "Up Quark";
+            if (getDistance(mx, my, 70, 40) <= 38) return "Up Quark";
+            if (getDistance(mx, my, 0, -70) <= 38) return "Down Quark";
+            if (getDistance(mx, my, 0, 0) <= 35) return "Gluon Field";
+        }
+        else if (targetStage === 3) {
+            if (getDistance(mx, my, 0, 0) <= 50) return "Quark Core";
+        }
+        else if (targetStage === 4) {
+            let distToCenter = getDistance(mx, my, 0, 0);
+            if (distToCenter >= 60 && distToCenter <= 120) return "Fundamental String";
+        }
+    } else { // Cosmic Mode
+        let time = Date.now() * 0.002;
+        if (targetStage === 0) {
+            for (let i = 0; i < 8; i++) {
+                if (getDistance(mx, my, Math.sin(time + i) * 60, Math.cos(time * 0.8 + i) * 60) <= 20) return "Free Quark / Gluon";
+            }
+        }
+        else if (targetStage === 1) {
+            for (let i = 0; i < 4; i++) {
+                if (getDistance(mx, my, Math.sin(time + i) * 40, Math.cos(time + i) * 40) <= 25) return "Newly Bound Hadron";
+            }
+        }
+        else if (targetStage === 2) {
+            if (getDistance(mx, my, 0, 0) <= 30) return "Stable Nucleus";
+            if (getDistance(mx, my, Math.cos(time) * 100, Math.sin(time) * 100) <= 20) return "Bound Electron";
+        }
+    }
+    return null;
+}
+
+// Mouse Handlers for Interactivity
+canvas.addEventListener('mousemove', (e) => {
+    const component = detectComponentHit(e.clientX, e.clientY);
+    canvas.style.cursor = component ? 'pointer' : 'default';
+});
+
+canvas.addEventListener('click', (e) => {
+    const componentName = detectComponentHit(e.clientX, e.clientY);
+    if (componentName && componentData[componentName]) {
+        openModal(componentName, componentData[componentName]);
+    }
+});
+
+// Modal Controller Functions
+window.openModal = function(title, description) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDesc').textContent = description;
+    document.getElementById('componentModal').classList.add('active');
+};
+
+window.closeModal = function() {
+    document.getElementById('componentModal').classList.remove('active');
+};
+
 // Global scope access functions
 window.switchTimeline = function(mode) {
     if (currentMode === mode) return;
@@ -232,7 +344,6 @@ window.switchTimeline = function(mode) {
     targetStage = 0;
     transitionProgress = 1.0;
     
-    // Slight delay to ensure DOM is ready before modifying UI
     setTimeout(updateUI, 50); 
 };
 
@@ -242,6 +353,7 @@ window.jumpToStage = function(index) {
     currentStage = targetStage;
     targetStage = index;
     transitionProgress = 0.0;
+    closeModal(); // Collapse modal if running a transition jump
     updateUI();
 };
 
