@@ -1,52 +1,130 @@
+* {
+    box-sizing: border-box;
+}
+
 body { 
     margin:0; 
+    padding:0;
     font-family: system-ui, -apple-system, sans-serif; 
     background:#05050f; 
     color:#ddd; 
     overflow:hidden; 
+    height: 100vh;
 }
-#app { display:flex; height:100vh; }
-#sidebar { 
-    width:260px; 
-    background:#0a0a1f; 
-    padding:20px; 
-    display:flex; 
-    flex-direction:column; 
-    border-right:1px solid #334; 
-}
-.mode-btn { 
-    padding:16px; 
-    margin:10px 0; 
-    background:#1a1a2e; 
-    border-radius:8px; 
-    cursor:pointer; 
-    transition: all 0.2s;
-}
-.mode-btn:hover { background:#223; }
-.mode-btn.active { 
-    background:#334466; 
-    border-left:5px solid #66ccff; 
-}
-#viewports-container { flex:1; position:relative; }
-.viewport { position:absolute; inset:0; display:none; }
-.viewport.active { display:block; }
-canvas { position:absolute; inset:0; }
 
-#cosmo-hud { 
-    position:absolute; 
-    bottom:40px; 
-    left:40px; 
-    background:rgba(10,10,30,0.85); 
-    padding:25px; 
-    border-radius:12px; 
-    max-width:460px; 
-    border:1px solid #445577;
+#app { 
+    display: flex; 
+    height: 100vh; 
+    width: 100vw;
+}
+
+#sidebar { 
+    width: 260px; 
+    background: #0a0a1f; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    border-right: 1px solid #334466; 
+    flex-shrink: 0;
     z-index: 10;
 }
-#cosmo-hud h2 { margin:0 0 12px 0; font-size:1.4em; }
-#plasma-canvas { background:#000; }
 
-/* Optional: make canvas nicer */
-#plasma-canvas {
-    image-rendering: crisp-edges;
+.sidebar-brand {
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #66ccff;
+}
+
+.mode-btn { 
+    padding: 16px; 
+    margin: 10px 0; 
+    background: #1a1a2e; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.mode-btn:hover { 
+    background: #223344; 
+}
+
+.mode-btn.active { 
+    background: #334466; 
+    border-left: 5px solid #66ccff; 
+    color: white;
+}
+
+#viewports-container { 
+    flex: 1; 
+    position: relative; 
+    overflow: hidden;
+    background: #000;
+}
+
+.viewport { 
+    position: absolute; 
+    inset: 0; 
+    display: none; 
+    width: 100%;
+    height: 100%;
+}
+
+.viewport.active { 
+    display: block; 
+}
+
+canvas { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    display: block;
+}
+
+/* Cosmology HUD */
+#cosmo-hud { 
+    position: absolute; 
+    bottom: 40px; 
+    left: 40px; 
+    background: rgba(10,10,30,0.9); 
+    padding: 25px; 
+    border-radius: 12px; 
+    max-width: 460px; 
+    border: 1px solid #445577;
+    z-index: 20;
+    pointer-events: none;
+}
+
+#cosmo-hud h2 { 
+    margin: 0 0 12px 0; 
+    font-size: 1.5em; 
+    color: inherit;
+}
+
+#cosmo-meta {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 12px;
+    font-size: 0.95em;
+    opacity: 0.9;
+}
+
+/* Scale mode elements */
+#stage-ui, #click-hint, #nav, #prog, #scroll-hint {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#scroll-hint {
+    bottom: 30px;
+    right: 30px;
+}
+
+/* Make sure everything is visible */
+#plasma-canvas, #starfield {
+    background: transparent !important;
 }
