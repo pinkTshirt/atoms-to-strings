@@ -3,73 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>From Atom to String & Cosmology</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Atoms to Strings</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="app">
-    <!-- Sidebar -->
-    <div id="sidebar">
-        <div class="sidebar-brand">Cosmic Engines</div>
-        <div class="mode-btn active" id="btn-scale-mode" data-mode="scale">
-            <h3>Scale Timeline</h3>
-            <p>From Atom to String</p>
-        </div>
-        <div class="mode-btn" id="btn-cosmo-mode" data-mode="cosmo">
-            <h3>Cosmic Timeline</h3>
-            <p>Standard Cosmology Model</p>
-        </div>
-        <div class="sidebar-footer">Scroll/Arrow keys to advance</div>
-    </div>
-
-    <!-- Viewports -->
-    <div id="viewports-container">
-        <!-- Scale Mode -->
-        <div id="viewport-scale" class="viewport active">
-            <canvas id="starfield"></canvas>
-            <div id="scene"></div>
-            <div id="stage-ui"><h2 id="st-title"></h2><div class="scale" id="st-scale"></div></div>
-            <div id="click-hint">click diagram · scroll to zoom</div>
-            <div id="nav"></div>
-            <div id="prog"></div>
-            <div id="scroll-hint">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="6" y="2" width="12" height="20" rx="6"/>
-                    <line x1="12" y1="6" x2="12" y2="10" stroke-linecap="round"/>
-                </svg>
-                <span id="scroll-label">Scroll to zoom in</span>
+    <header class="main-header">
+        <div class="container header-flex">
+            <div class="logo">
+                <span class="logo-icon">⚛️</span>
+                <h1>Atoms <span class="accent-text">to</span> Strings</h1>
             </div>
+            <nav class="main-nav">
+                <a href="#" class="nav-link active">Workspace</a>
+                <a href="#" class="nav-link">Documentation</a>
+                <a href="https://github.com/pinkTshirt/atoms-to-strings" target="_blank" class="nav-link github-link">GitHub</a>
+            </nav>
         </div>
+    </header>
 
-        <!-- Cosmology Mode (updated default title) -->
-        <div id="viewport-cosmo" class="viewport">
-            <canvas id="plasma-canvas"></canvas>
-            <div id="cosmo-hud">
-                <h2 id="cosmo-title">Inflation & Quark-Gluon Plasma</h2>
-                <div id="cosmo-meta">
-                    <span id="cosmo-time">Time: ~10⁻⁵ Seconds</span>
-                    <span id="cosmo-temp">Temp: ~10¹² K</span>
+    <main class="container workspace-container">
+        <!-- Control/Configuration Panel -->
+        <section class="panel control-panel">
+            <h2>Configuration</h2>
+            <div class="form-group">
+                <label for="mode-select">Processing Mode</label>
+                <select id="mode-select" class="form-control">
+                    <option value="serialize">Serialize (Atoms → String)</option>
+                    <option value="deserialize">Parse (String → Atoms)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="format-select">Output Format</label>
+                <select id="format-select" class="form-control">
+                    <option value="json">Standard JSON</option>
+                    <option value="binary">Compressed Binary String</option>
+                    <option value="custom">Custom Protocol Token</option>
+                </select>
+            </div>
+            <button id="process-btn" class="btn btn-primary">Execute Transformation</button>
+        </section>
+
+        <!-- Dynamic Data IO Grid -->
+        <section class="io-grid">
+            <div class="panel input-panel">
+                <div class="panel-header">
+                    <h2>Source Input</h2>
+                    <span class="badge">Awaiting Data</span>
                 </div>
-                <p id="cosmo-body"></p>
+                <textarea id="input-area" class="form-control text-workspace" placeholder="Enter configuration, object structures, or atomic entities here..."></textarea>
             </div>
-            <div id="cosmo-scroll-hint">
-                <span>Scroll Down to Advance Cosmic Time ↓</span>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal and Tooltip (unchanged) -->
-    <div id="modal">
-        <div id="modal-inner">
-            <button id="modal-close">✕</button>
-            <h2 id="m-title"></h2>
-            <span class="mbadge" id="m-badge"></span>
-            <div id="m-body"></div>
-        </div>
-    </div>
-    <div id="tooltip"><h3 id="tt-title"></h3><span class="badge" id="tt-badge"></span><p id="tt-body"></p></div>
-</div>
 
-<script type="module" src="js/main.js"></script>
+            <div class="panel output-panel">
+                <div class="panel-header">
+                    <h2>Processed Output</h2>
+                    <button id="copy-btn" class="btn btn-secondary btn-sm">Copy Output</button>
+                </div>
+                <div class="output-display-wrapper">
+                    <pre id="output-area" class="output-placeholder">Transformation results will appear here in real-time...</pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <p>&copy; 2026 Atoms to Strings. Built for optimal performance.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
